@@ -13,7 +13,7 @@
         <div class="container">
         <div class="header">
             <div><a id="logo" href="index.php"></a></div>
-            <?php if(!(isset($_COOKIE['login'])||isset($login))){ ?>
+            <?php if(!(isset($_SESSION['login'])||isset($login) || (validAuthIP("Config.xml")==true))){ ?>
             <div class="guestbox"><div>Hello, Guest. 
                <?php if(isset($_REQUEST['db'])&&isset($_REQUEST['an'])&&isset($_REQUEST['resultId'])){ 
                    $params = array(
@@ -43,7 +43,7 @@
                     <?php } ?>
                     for full access.</div></div>
              <?php } ?>
-            <?php if(isset($_COOKIE['login'])||isset($login)){ ?>                     
+            <?php if(isset($_SESSION['login'])||isset($login)){ ?>                     
                     <div class="login"><a href="logout.php">Logout</a></div>                             
                    <?php } else { ?>
                     <?php if(isset($_REQUEST['db'])&&isset($_REQUEST['an'])&&isset($_REQUEST['resultId'])){

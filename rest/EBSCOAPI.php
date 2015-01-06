@@ -10,6 +10,7 @@
 
 require_once 'EBSCOConnector.php';
 require_once 'EBSCOResponse.php';
+require_once 'EBSCOAuthenticateIP.php';
 
 
 /**
@@ -84,9 +85,10 @@ class EBSCOAPI
     protected function request($action, $params = null, $attempts = 3)
     {
         try {
-            
+
             $authenticationToken = $this->getAuthToken();
             $sessionToken = $this ->getSessionToken($authenticationToken);
+
             
             if(empty($authenticationToken)){
                $authenticationToken = $this -> getAuthToken();
@@ -95,13 +97,14 @@ class EBSCOAPI
             if(empty($sessionToken)){
                 $sessionToken = $this -> getSessionToken($authenticationToken,'y');
             }
-                   
+
             $headers = array(
                 'x-authenticationToken: ' . $authenticationToken,
                 'x-sessionToken: ' . $sessionToken
             );
 
             $response = call_user_func_array(array($this->connector(), "request{$action}"), array($params, $headers));
+			
             $result = $this->response($response)->result();
             $results = $result;             
             return $results;
@@ -162,32 +165,35 @@ class EBSCOAPI
      * @access public
      */
     public function getAuthToken(){
-        $lockFile = fopen("lock.txt","r");
-        $tokenFile =fopen("token.txt","r");
-        while(!feof($tokenFile)){
-            $authToken = rtrim(fgets($tokenFile),"\n");
-            $timeout = fgets($tokenFile)-600;
-            $timestamp = fgets($tokenFile);
-        }
-        fclose($tokenFile);
-        if(time()-$timestamp>=$timeout){
-            // Lock check.
-            if(flock($lockFile, LOCK_EX)){
-                $tokenFile = fopen("token.txt","w+");
+		$timestamp=time();
+		$timeout=0;
+		if (isset($_SESSION["authenticationToken"])){
+            $this->authToken = $_SESSION["authenticationToken"];
+            $timeout = $_SESSION["authenticationTimeout"]-600;
+            $timestamp = $_SESSION["authenticationTimeStamp"];
+		}
+		else
+		{
+			$result = $this->apiAuthenticationToken();
+            $_SESSION["authenticationToken"]= $result['authenticationToken'];
+            $_SESSION["authenticationTimeout"]= $result['authenticationTimeout'];
+            $_SESSION["authenticationTimeStamp"]= $result['authenticationTimeStamp'];
+		}
+
+        if(time()-$timestamp >= $timeout){
                 $result = $this->apiAuthenticationToken();
-                fwrite($tokenFile, $result['authenticationToken']."\n");
-                fwrite($tokenFile, $result['authenticationTimeout']."\n");
-                fwrite($tokenFile, $result['authenticationTimeStamp']);
-                fclose($tokenFile);
+                $_SESSION["authenticationToken"]= $result['authenticationToken'];
+                $_SESSION["authenticationTimeout"]= $result['authenticationTimeout'];
+                $_SESSION["authenticationTimeStamp"]= $result['authenticationTimeStamp'];
+
                 return $result['authenticationToken'];
-            }else{
-                return $authToken;
+			}
+		else
+			{
+                return $this->authToken;
             }
-        }else{
-            return $authToken;
-        }
-        fclose($lockFile);       
-    }
+      
+	}
     
     /**
      * Wrapper for authentication API call
@@ -211,45 +217,26 @@ class EBSCOAPI
      * @param Authentication token, Profile 
      * @access public
      */
-    public function getSessionToken($authenToken, $invalid='n'){
+    public function getSessionToken($authenToken, $guest='n'){
         $token = ''; 
-        
+		$configFile="config.xml";
+
         // Check user's login status
-        if(isset($_COOKIE['login'])){              
-               if($invalid=='y'){                   
-                   $profile = $_SESSION['sessionToken']['profile'];
-                   $sessionToken = $this->apiSessionToken($authenToken, $profile,'n');                  
-                   $_SESSION['sessionToken']=$sessionToken;                 
-               }
-               $token = $_SESSION['sessionToken']['sessionToken'];            
+        if(isset($_SESSION['login']) or (validAuthIP($configFile)==true)){    
+		   if (($guest=='n') or (validAuthIP($configFile)==true)){
+			   $sessionToken = $this->apiSessionToken($authenToken, 'n');
+			   $_SESSION['sessionToken']=$sessionToken;
+		   }
+		   $token = $_SESSION['sessionToken'];
         }
-        else if(isset($_COOKIE['Guest'])){
-               if($invalid=='y'){                   
-                   $profile = $_SESSION['sessionToken']['profile'];
-                   $sessionToken = $this->apiSessionToken($authenToken, $profile,'y');   
-                   $_SESSION['sessionToken']=$sessionToken;
-               }     
-               $token = $_SESSION['sessionToken']['sessionToken'];   
-        }else{            
-            $xml ="Config.xml";
-            $dom = new DOMDocument();
-            $dom->load($xml); 
-            $EDSCredentials = $dom ->getElementsByTagName('EDSCredentials')->item(0);
-            $users = $EDSCredentials -> getElementsByTagName('User');
-            $profileId = '';
-            foreach($users as $user){
-               $userType = $user->getElementsByTagName('ClientUser')->item(0)->nodeValue;
-                if($userType == 'guest'){                     
-                $profileId = $user -> getElementsByTagName('EDSProfile')->item(0)->nodeValue;               
-                break;
-                }
-            }                     
-            $sessionToken = $this->apiSessionToken($authenToken, $profileId,'y');
-            $_SESSION['profile'] = $profileId;   
-            $_SESSION['sessionToken']=$sessionToken;          
-            setcookie("Guest", $profileId, 0);
-            $token = $sessionToken['sessionToken'];           
-        }     
+        else 
+		{
+		   $sessionToken = $this->apiSessionToken($authenToken, 'y');   
+		   $_SESSION['sessionToken']=$sessionToken;
+   
+		   $token = $_SESSION['sessionToken'];   
+			// TODO: check IP validation
+		}
         return $token;
     }
 
@@ -260,20 +247,18 @@ class EBSCOAPI
      *
      * @access public
      */
-    public function apiSessionToken($authenToken, $profile, $guest)
+    public function apiSessionToken($authenToken, $guest="y")
     {
         // Add authentication tokens to headers
         $headers = array(
             'x-authenticationToken: ' . $authenToken
         );
 
-        $response = $this->connector()->requestSessionToken($headers, $profile,$guest);
+        $response = $this->connector()->requestSessionToken($headers, $guest);
+
         $result = $this->response($response)->result();
-        $token = array(
-            'sessionToken'=>$result,
-            'profile' => $profile
-        );   
-         return $token;
+
+         return $result;
     }
    
     /**
@@ -363,7 +348,8 @@ class EBSCOAPI
     
     public function apiInfo(){
         
-        $response = $this->request('Info','');
+        $response = $this->request('Info');
+	
         $Info = array(
             'Info' => $response,
             'timestamp'=>time()

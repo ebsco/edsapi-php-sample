@@ -19,27 +19,38 @@ $Info = $api->getInfo();
                 <input type="radio" id="type-keyword" name="fieldcode" value="keyword" checked="checked"/>
                 <label for="type-keyword">Keyword</label>
             </td>
-      <?php if(!empty($Info['search'])){ ?>
-      <?php foreach($Info['search'] as $searchField){
-          if($searchField['Label']=='Author'){
-              $fieldCode = $searchField['Code']; ?>
-      
+		<?php 
+			$fieldCode="";
+		    $selAuthor="";
+			if(!empty($Info['search'])){ 
+				foreach($Info['search'] as $searchField){
+					if($searchField['Label']=='Author'){
+						$selAuthor=" selected ";
+					}
+				}
+			}
+		?>
+			
             <td>
-                <input type="radio" id="type-author" name="fieldcode" value="<?php echo $fieldCode; ?>" />
+                <input type="radio" id="type-author" name="fieldcode" value="AU"  <?php echo $selAuthor; ?>/>
                 <label for="type-author">Author</label>
             </td>
       <?php   
-          }
-          if($searchField['Label']=='Title'){
-              $fieldCode = $searchField['Code']; ?>
+			$selTitle="";
+ 			if(!empty($Info['search'])){ 
+				
+				foreach($Info['search'] as $searchField){         
+					if($searchField['Label']=='Title'){
+						$selTitle=" selected ";
+					}
+				}
+			}
+			?>
             <td>
-                <input type="radio" id="type-title" name="fieldcode" value="<?php echo $fieldCode; ?>" />
+                <input type="radio" id="type-title" name="fieldcode" value="TI" <?php echo $selTitle; ?>/>
                 <label for="type-title">Title</label>                             
             </td>          
-      <?php
-          }
-      } ?>
-      <?php } ?>          
+       
         </tr>
     </table>
 </form>

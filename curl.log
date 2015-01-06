@@ -1,30 +1,20 @@
-* About to connect() to eds-api.ebscohost.com port 443 (#0)
+* About to connect() to eds-api.ebscohost.com port 80 (#0)
 *   Trying 140.234.252.186...
 * connected
-* Connected to eds-api.ebscohost.com (140.234.252.186) port 443 (#0)
-* SSL connection using RC4-SHA
-* Server certificate:
-* 	 subject: serialNumber=3VGWCIPPM-w6YO99vtb/FbyC5-QZTLBd; OU=GT19715001; OU=See www.rapidssl.com/resources/cps (c)12; OU=Domain Control Validated - RapidSSL(R); CN=eds-api.ebscohost.com
-* 	 start date: 201
-* 	 expire date: 201
-* 	 subjectAltName: eds-api.ebscohost.com matched
-* 	 issuer: C=U
-* 	 SSL certificate verify result: self signed certificate in certificate chain (19), continuing anyway.
-> POST /Authservice/rest/UIDAuth HTTP/1.1
+* Connected to eds-api.ebscohost.com (140.234.252.186) port 80 (#0)
+> GET /edsapi/rest/Retrieve?an=87690402&dbid=ers&highlightterms=stem%2Ccells HTTP/1.1
 Host: eds-api.ebscohost.com
 Accept: */*
-Content-Type: application/xml
-Conent-Length: 255
-Content-Length: 255
+x-authenticationToken: 15b0423c-246f-4c38-9132-d38c4b0afe08
+x-sessionToken: 2bddf71e-d8bb-40e2-a54d-aafc34dd43fe.I0md9lJPvxgwQb29I3pgl7V+u0uAP9UY6stt+t04DfE=
 
-* upload completely sent off: 255 out of 255 bytes
-< HTTP/1.1 400 Bad Request
+< HTTP/1.1 200 OK
 < Cache-Control: private
-< Content-Length: 265
+< Content-Length: 36005
 < Content-Type: application/xml; charset=utf-8
 < Server: Microsoft-IIS/7.5
 < X-AspNet-Version: 4.0.30319
 < X-Powered-By: ASP.NET
-< Date: Mon, 22 Dec 2014 11:30:15 GMT
+< Date: Tue, 06 Jan 2015 20:08:57 GMT
 < 
 * Connection #0 to host eds-api.ebscohost.com left intact

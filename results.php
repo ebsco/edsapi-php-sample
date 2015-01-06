@@ -1,170 +1,180 @@
 <?php
-include('app/app.php');
-include('rest/EBSCOAPI.php');
+	include('app/app.php');
+	include('rest/EBSCOAPI.php');
 
-$api = new EBSCOAPI();
+	$api = new EBSCOAPI();
 
-// Build  the arguments for the Search API method
-$searchTerm = str_replace('"','',$_REQUEST['query']);
-$fieldCode = $_REQUEST['fieldcode']? $_REQUEST['fieldcode'] :'';
-$start = isset($_REQUEST['pagenumber']) ? $_REQUEST['pagenumber'] : 1;
-$limit = isset($_REQUEST['resultsperpage'])?$_REQUEST['resultsperpage']:20;
-$sortBy = isset($_REQUEST['sort'])?$_REQUEST['sort']:'relevance';
-$amount = isset($_REQUEST['view'])?$_REQUEST['view']:'detailed';
-$mode = 'all';
-$expander = isset($_REQUEST['expander'])? $_REQUEST['expander']:'';
-$debug = isset($_REQUEST['debug'])? $_REQUEST['debug']:'';
-$Info = $api->getInfo();
+	// Build  the arguments for the Search API method
+	$searchTerm = str_replace('"','',$_REQUEST['query']);
+	$fieldCode = $_REQUEST['fieldcode']? $_REQUEST['fieldcode'] :'';
+	$start = isset($_REQUEST['pagenumber']) ? $_REQUEST['pagenumber'] : 1;
+	$limit = isset($_REQUEST['resultsperpage'])?$_REQUEST['resultsperpage']:20;
+	$sortBy = isset($_REQUEST['sort'])?$_REQUEST['sort']:'relevance';
+	$amount = isset($_REQUEST['view'])?$_REQUEST['view']:'detailed';
+	$mode = 'all';
+	$expander = isset($_REQUEST['expander'])? $_REQUEST['expander']:'';
+	$debug = isset($_REQUEST['debug'])? $_REQUEST['debug']:'';
+	$Info = $api->getInfo();
 
-// If user come back from the detailed record 
-// The same search will not call API again
-if(isset($_REQUEST['back'] )&&isset($_SESSION['results'])){
-    
-    $results = $_SESSION['results'];
-    
-}else if(isset($_REQUEST['option'])){
-// All page options will be handled here 
-// New Search or refined search will call the API
-    
-    $results = $_SESSION['results'];  
-    $queryStringUrl = $results['queryString'];
-    
-    $action = isset($_REQUEST['action'])?$_REQUEST['action']:'';
-    $actions = array();
-    if(!empty($action)){        
-       if(strstr($action, 'setsort(')){
-           $sortBy = str_replace(array('setsort(',')'),array('',''), $action);
-           $start = 1;
-       }
-       if(strstr($action, 'setResultsperpage(')){
-           $limit = str_replace(array('setResultsperpage(',')'),array('',''), $action);
-       }
-       if(strstr($action, 'GoToPage(')){
-        $start = str_replace(array('GoToPage(',')'),array('',''), $action);
-       }
-       $actions['action'] = $action;
-    }
-    
-    $view = isset($_REQUEST['view'])? array('view'=>$_REQUEST['view']):array();
-    $params = array_merge($actions,$view);
-    $url = $queryStringUrl.'&'.http_build_query($params);
-    $results = $api->apiSearch($url);    
-    // Will save the result into the session with the new SessionToken as index    
-    $_SESSION['results'] = $results;
-    
-}else if(isset($_REQUEST['refine'])||isset($_GET['login'])){
-// New Search or refined search will call the API
-    if(isset($_REQUEST['action'])){
-    $actions = $_REQUEST['action'];
-    }else{
-    $actions = '';
-    }
-    $refineActions = array();
-    if(is_array($actions)){
-        for($i=0; $i<count($actions);$i++){
-            $refineActions['action-'.($i+1)]= $actions[$i+1];
-        }        
-    }else{
-        $refineActions['action'] = $actions;
-    }
-    $results = $_SESSION['results'];
-    $queryStringUrl = $results['queryString'];
-    
-    $params = http_build_query($refineActions);
-    
-    $url = $queryStringUrl.'&'.$params;
-    $results = $api->apiSearch($url);
+	// If user come back from the detailed record 
+	// The same search will not call API again
+	if(isset($_REQUEST['back'] )&&isset($_SESSION['results'])){
+		
+		$results = $_SESSION['results'];
+		
+	}else if(isset($_REQUEST['option'])){
+	// All page options will be handled here 
+	// New Search or refined search will call the API
+		
+		$results = $_SESSION['results'];  
+		$queryStringUrl = $results['queryString'];
+		
+		$action = isset($_REQUEST['action'])?$_REQUEST['action']:'';
+		$actions = array();
+		if(!empty($action)){        
+		   if(strstr($action, 'setsort(')){
+			   $sortBy = str_replace(array('setsort(',')'),array('',''), $action);
+			   $start = 1;
+		   }
+		   if(strstr($action, 'setResultsperpage(')){
+			   $limit = str_replace(array('setResultsperpage(',')'),array('',''), $action);
+		   }
+		   if(strstr($action, 'GoToPage(')){
+			$start = str_replace(array('GoToPage(',')'),array('',''), $action);
+		   }
+		   $actions['action'] = $action;
+		}
+		
+		$view = isset($_REQUEST['view'])? array('view'=>$_REQUEST['view']):array();
+		$params = array_merge($actions,$view);
+		$url = $queryStringUrl.'&'.http_build_query($params);
+		$results = $api->apiSearch($url);    
+		// Will save the result into the session with the new SessionToken as index    
+		$_SESSION['results'] = $results;
+		
+	}else if(isset($_REQUEST['refine'])||isset($_GET['login'])){
+	// New Search or refined search will call the API
+		if(isset($_REQUEST['action'])){
+		$actions = $_REQUEST['action'];
+		}else{
+		$actions = '';
+		}
+		$refineActions = array();
+		if(is_array($actions)){
+			for($i=0; $i<count($actions);$i++){
+				$refineActions['action-'.($i+1)]= $actions[$i+1];
+			}        
+		}else{
+			$refineActions['action'] = $actions;
+		}
+		$results = $_SESSION['results'];
+		$queryStringUrl = $results['queryString'];
+		
+		$params = http_build_query($refineActions);
+		
+		$url = $queryStringUrl.'&'.$params;
+		$results = $api->apiSearch($url);
 
-    $_SESSION['results'] = $results;
-    
-    if(isset($_REQUEST['refine']))$start = 1;
-         
-}else{
+		$_SESSION['results'] = $results;
+		
+		if(isset($_REQUEST['refine']))$start = 1;
+			 
+	}else{
 
-       $query = array();
+		   $query = array();
 
-        // Basic search
-        if(!empty($searchTerm)) {
-            $term = urldecode($searchTerm);
-            $term = str_replace('"', '', $term); // Temporary
-            $term = str_replace(',',"\,",$term);
-            $term = str_replace(':', '\:', $term);
-            $term = str_replace('(', '\(', $term);
-            $term = str_replace(')', '\)', $term);
-            
-            if($fieldCode!='keyword'){
-            $query_str = implode(":", array($fieldCode, $term));
-            }else{
-            $query_str = $term;
-            }
-            $query["query"] = $query_str;
+			// Basic search
+			if(!empty($searchTerm)) {
+				$term = urldecode($searchTerm);
+				$term = str_replace('"', '', $term); // Temporary
+				$term = str_replace(',',"\,",$term);
+				$term = str_replace(':', '\:', $term);
+				$term = str_replace('(', '\(', $term);
+				$term = str_replace(')', '\)', $term);
+				
+				if($fieldCode!='keyword'){
+				$query_str = implode(":", array($fieldCode, $term));
+				}else{
+				$query_str = $term;
+				}
+				$query["query"] = $query_str;
 
-        // No search term, return an empty array
-        } else {
-            $results = array();            
-        }
-           
-        // Add the HTTP query params
-        $params = array(
-            // Specifies the sort. Valid options are:
-            // relevance, date, date2
-            // date = Date descending
-            // date2 = Date descending
-            'sort'           => $sortBy,
-            // Specifies the search mode. Valid options are:
-            // bool, any, all, smart
-            'searchmode'     => $mode,
-            // Specifies the amount of data to return with the response. Valid options are:
-            // Title: title only
-            // Brief: Title + Source, Subjects
-            // Detailed: Brief + full abstract
-            'view'           => $amount,
-            // Specifies whether or not to include facets
-            'includefacets'  => 'y',
-            'resultsperpage' => $limit,
-            'pagenumber'     => $start,
-            // Specifies whether or not to include highlighting in the search results
-            'highlight'      => 'y',
-            'expander'       => $expander
-        );
-        $params = array_merge($params, $query);
-        $params = http_build_query($params);
-        
-    $results = $api->apiSearch($params);
-    
-    //Cach the results for each session
-    $_SESSION['results'] = $results;
-}
+			// No search term, return an empty array
+			} else {
+				$results = array();            
+			}
+			   
+			// Add the HTTP query params
+			$params = array(
+				// Specifies the sort. Valid options are:
+				// relevance, date, date2
+				// date = Date descending
+				// date2 = Date descending
+				'sort'           => $sortBy,
+				// Specifies the search mode. Valid options are:
+				// bool, any, all, smart
+				'searchmode'     => $mode,
+				// Specifies the amount of data to return with the response. Valid options are:
+				// Title: title only
+				// Brief: Title + Source, Subjects
+				// Detailed: Brief + full abstract
+				'view'           => $amount,
+				// Specifies whether or not to include facets
+				'includefacets'  => 'y',
+				'resultsperpage' => $limit,
+				'pagenumber'     => $start,
+				// Specifies whether or not to include highlighting in the search results
+				'highlight'      => 'y',
+				'expander'       => $expander
+			);
+			
 
-// Error
-if (isset($results['error'])) {
-    $error = $results['error'];
-    $results =  array();
-} else {
-    $error = null;
-}
+			
+			$params = array_merge($params, $query);
+			$params = http_build_query($params);
+			
+			//check for Research Starters active
+			if (isset($Info["relatedcontent"])) {
+				if ($Info["relatedcontent"][0]["Type"]=="rs" && $Info["relatedcontent"][0]["DefaultOn"]=="y" ) {
+					$params.="&action=includerelatedcontent(rs)";
+				}
+			}
 
-//save debug into session
-if($debug == 'y'||$debug == 'n'){
-    $_SESSION['debug'] = $debug;
-}
+		$results = $api->apiSearch($params);
+		
+		//Cach the results for each session
+		$_SESSION['results'] = $results;
+	}
 
-// Variables used in view
-$variables = array(
-    'searchTerm'     => $searchTerm,
-    'fieldCode'      => $fieldCode,
-    'results'        => $results,
-    'error'          => $error,
-    'start'          => $start,
-    'limit'          => $limit,
-    'refineSearchUrl'=> '',
-    'amount'         => $amount,
-    'sortBy'         => $sortBy,
-    'id'             => 'results',
-    'Info'           => $Info,
-    'debug'          => isset($_SESSION['debug'])? $_SESSION['debug']:''
-    
-);
+	// Error
+	if (isset($results['error'])) {
+		$error = $results['error'];
+		$results =  array();
+	} else {
+		$error = null;
+	}
 
-render('results.html', 'layout.html', $variables);
+	//save debug into session
+	if($debug == 'y'||$debug == 'n'){
+		$_SESSION['debug'] = $debug;
+	}
+
+	// Variables used in view
+	$variables = array(
+		'searchTerm'     => $searchTerm,
+		'fieldCode'      => $fieldCode,
+		'results'        => $results,
+		'error'          => $error,
+		'start'          => $start,
+		'limit'          => $limit,
+		'refineSearchUrl'=> '',
+		'amount'         => $amount,
+		'sortBy'         => $sortBy,
+		'id'             => 'results',
+		'Info'           => $Info,
+		'debug'          => isset($_SESSION['debug'])? $_SESSION['debug']:''
+	);
+
+	render('results.html', 'layout.html', $variables);
 ?>
+

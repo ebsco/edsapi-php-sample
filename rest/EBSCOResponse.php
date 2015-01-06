@@ -117,6 +117,7 @@ class EBSCOResponse
         $appliedFacets = array();
         $appliedLimiters = array();
         $appliedExpanders = array();
+        $relatedRecords = array();
         
         if($this->response->SearchRequestGet->SearchCriteriaWithActions->QueriesWithAction){
         $queriesWithAction = $this->response->SearchRequestGet->SearchCriteriaWithActions->QueriesWithAction->QueryWithAction;
@@ -164,13 +165,54 @@ class EBSCOResponse
         }
         
         if($this->response->SearchRequestGet->SearchCriteriaWithActions->ExpandersWithAction){
-        $expandersWithAction = $this->response->SearchRequestGet->SearchCriteriaWithActions->ExpandersWithAction->ExpanderWithAction;
-        foreach($expandersWithAction as $expanderWithAction){
-            $appliedExpanders[] = array(
-                'Id' => (string)$expanderWithAction->Id,
-                'removeAction'=>(string)$expanderWithAction->RemoveAction
-            );
+			$expandersWithAction = $this->response->SearchRequestGet->SearchCriteriaWithActions->ExpandersWithAction->ExpanderWithAction;
+			foreach($expandersWithAction as $expanderWithAction){
+				$appliedExpanders[] = array(
+					'Id' => (string)$expanderWithAction->Id,
+					'removeAction'=>(string)$expanderWithAction->RemoveAction
+				);
+			}
         }
+
+		
+        if($this->response->SearchResult->RelatedContent){
+
+			$relatedRecsWithAction = $this->response->SearchResult->RelatedContent->RelatedRecords;
+			foreach($relatedRecsWithAction->RelatedRecord as $relRecs){
+				if ($relRecs->Type == "rs") {
+
+					foreach($relRecs->Records->Record as $rec) {
+						$items=array();
+						foreach ($rec->Items->Item as $item) {
+							$items[] = array(
+								'Name' => (string)$item->Name,
+								'Label' => (string)$item->Label,								
+								'Group' => (string)$item->Group,								
+								'Data' => (string)$item->Data,								
+							);
+						}
+						
+						$records[] = array(
+							'Id' => (string)$rec->ResultId,
+							'DbId' => (string)$rec->Header->DbId,
+							'DbLabel'=>(string)$rec->Header->DbLabel,
+							'An'=>(string)$rec->Header->An,
+							'PLink'=>(string)$rec->PLink,
+							'ImageInfo'=>(string)$rec->ImageInfo->CoverArt->Target,
+							'FullText'=>(string)$rec->FullText,
+							'Items'=>$items
+						);
+					}
+					
+
+					
+					$relatedRecords[] = array(
+						'Label' => (string)$relRecs->Label,
+						'records' => $records
+					);
+					
+				}
+			}
         }
         
         if ($hits > 0) {
@@ -185,6 +227,7 @@ class EBSCOResponse
             'appliedFacets'=>$appliedFacets,
             'appliedLimiters'=>$appliedLimiters,
             'appliedExpanders'=>$appliedExpanders,
+            'relatedRecords'=>$relatedRecords,
             'records'     => $records,
             'facets'      => $facets
         );
@@ -518,13 +561,26 @@ private function buildRecords()
                 'Type'   => (string) $element->Type,
                 'values' => $values
             );
+        }        
+		
+		// related content
+        $relatedcontent = array();
+        foreach ($this->response->AvailableSearchCriteria->AvailableRelatedContent->AvailableRelatedContent as $element) {
+            $values = array();
+            $relatedcontent[] = array(
+                'Type'   => (string) $element->Type,
+                'Label'  => (string) $element->Label,
+                'Action' => (string) $element->AddAction,
+                'DefaultOn'     => (string) $element->DefaultOn
+            );
         }
 
         $result = array(
             'sort'      => $sort,
             'search'    => $search,
             'expanders' => $expanders,
-            'limiters'  => $limiters
+            'limiters'  => $limiters,
+            'relatedcontent'  => $relatedcontent
         );
 
         return $result;

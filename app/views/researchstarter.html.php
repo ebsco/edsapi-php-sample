@@ -7,15 +7,7 @@
 <div id="toptabcontent">
     <div class ="topbar">
        <div style="padding-top: 6px; float: left" ><a style="color: #ffffff;margin-left: 15px;" href="results.php?<?php echo $encodedQuery;?>&fieldcode=<?php echo $_REQUEST['fieldcode'];?>&<?php echo $queryStringUrl; ?>&back=y"> << Back to Results</a></div>
-      <div style="float: right;margin: 7px 20px 0 0;color: white">
-          <?php if($_REQUEST['resultId']>1){  ?>
-           <a href="recordSwich.php?<?php echo $encodedQuery;?>&fieldcode=<?php echo $_REQUEST['fieldcode'];?>&resultId=<?php echo ($_REQUEST['resultId']-1)?>&<?php echo $queryStringUrl; ?>"><span class="results-paging-previous">&nbsp;&nbsp;&nbsp;&nbsp;</span></a>
-            <?php }
-            echo $_REQUEST['resultId'].' of '.$_REQUEST['recordCount'];
-			if($_REQUEST['resultId']<$_REQUEST['recordCount']){  ?>
-				<a href="recordSwich.php?<?php echo $encodedQuery;?>&fieldcode=<?php echo $_REQUEST['fieldcode'];?>&resultId=<?php echo ($_REQUEST['resultId']+1)?>&<?php echo $queryStringUrl; ?>"><span class="results-paging-next">&nbsp;&nbsp;&nbsp;&nbsp;</span></a>
-           <?php } ?>
-      </div>
+
     </div>
  <?php 
 	if($debug=='y'){
@@ -30,19 +22,13 @@
 		echo '<div class="error">'.$error.'</div>';
 	} 
 	
-	if((!isset($_SESSION['login']))&&$result['AccessLevel']==1){ ?>
+	if( !(isset($_SESSION['login']) || (validAuthIP("Config.xml")==true)) && $result['AccessLevel']==1){ ?>
          <p>This record from <b>[<?php echo $result['DbLabel']; ?>]</b> cannot be displayed to guests.<br><a href="login.php?path=record&db=<?php echo $_REQUEST['db']?>&an=<?php echo $_REQUEST['an']?>&<?php echo $encodedHighLigtTerm;?>&resultId=<?php echo $_REQUEST['resultId'] ?>&recordCount=<?php echo $_REQUEST['recordCount'] ?>&<?php echo $encodedQuery;?>&fieldcode=<?php echo $_REQUEST['fieldcode']; ?>">Login</a> for full access.</p>
 <?php 
 	}
 	else
 	{ ?>     
-    <h1>
-    <?php 
-		if (!empty($result['Items'])) { 
-			echo $result['Items'][0]['Data'];
-		} 
-	 ?>
-    </h1>       
+      
          <div>
              <div class="table-cell floatleft">                 
 				<?php 
@@ -110,67 +96,14 @@
                       <?php } ?>                 
              </div>
              <div style="margin-left: 20px" class="table-cell span-15">
-				<!-- book jacket -->
-				 <div class="jacket">
-					<?php 
-						if(!empty($result['ImageInfo'])) {              
-							echo '<img width="150px" height="200px" src="'.$result['ImageInfo']['medium'].'" />';
-						} 
-					?>
-				 </div>
-		 
-              <table>                  
-				<?php 
-					if (!empty($result['Items'])) { 
-						for($i=1;$i<count($result['Items']);$i++) { ?>
-							 <tr>
-								<td style="width: 150px; vertical-align: top">
-									<strong><?php echo $result['Items'][$i]['Label']; ?>:</strong>
-								</td>
-								<td>
-								<?php 
-									if($result['Items'][$i]['Label']=='URL'){ 	
-										echo '<a href="'.$result['Items'][$i]['Data'].'" target="_blank">'.$result['Items'][$i]['Data'].'</a>' ;
-									}
-									else
-									{ 
-										echo $result['Items'][$i]['Data']; 
-									} 
-								?>
-							   </td>
-							</tr> 
-                     <?php } 
-					} 
-					
-					if(!empty($result['pubType'])){ ?> 
-                     <tr>
-                         <td><strong>PubType:</strong></td>
-                         <td><?php echo $result['pubType'] ?></td>
-                     </tr>
-				<?php } 
-					if (!empty($result['DbLabel'])) { ?>
-						<tr>
-							<td><strong>Database:</strong></td>
-							<td>
-								<?php echo $result['DbLabel']; ?>
-							</td>
-						</tr>
-				<?php } 
-				
-					if( !(isset($_SESSION['login']) || (validAuthIP("Config.xml")==true)) && $result['AccessLevel']==2){ ?>
-					<tr>
-						<td><br></td>
-						<td><br></td>
-					</tr>
-					 <tr>
-						 <td colspan="2">This record from <b>[<?php echo $result['DbLabel']; ?>]</b> cannot be displayed to guests.<br><a href="login.php?path=record&db=<?php echo $_REQUEST['db']?>&an=<?php echo $_REQUEST['an']?>&<?php echo $encodedHighLigtTerm?>&resultId=<?php echo $_REQUEST['resultId'] ?>&recordCount=<?php echo $_REQUEST['recordCount'] ?>&<?php echo $encodedQuery;?>&fieldcode=<?php echo $_REQUEST['fieldcode']; ?>">Login</a> for full access.</td>
-					</tr>
-				<?php } ?>
-			</table> 
+ 
         <?php 
 			if(!empty($result['htmllink'])){?>
 				 <div id="html" style="margin-top:30px">
-					 <?php echo $result['htmllink'] ?>
+					 <?php 
+						$s=substr($result['htmllink'],stripos($result['htmllink'],"<h2>"));
+						echo $s; 
+					 ?>
 				 </div>
 		<?php } ?>
 		

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Config>
-    <Version>EDS API-PHP Demo 1.4</Version>
+    <Version>EDS API-PHP Demo 1.5</Version>
     <EndPoints>
         <EndPoint>http://eds-api.ebscohost.com/edsapi/rest</EndPoint>
         <AuthenticationEndPoint>https://eds-api.ebscohost.com/Authservice/rest</AuthenticationEndPoint>                           
@@ -8,23 +8,19 @@
     <AbstractLength>300</AbstractLength>
     <ClientCredentials>
         <User>
-            <UserId>insert client side profile</UserId>
-            <Password>insert client side profile</Password>        
+            <UserId>user1</UserId>
+            <Password>user1pwd</Password>        
         </User>
     </ClientCredentials>
-    
     <EDSCredentials>     
-        <User>
-            <ClientUser>guest</ClientUser>
-            <EDSUserID>insert EDS credential</EDSUserID>
-            <EDSPassword>insert EDS credential</EDSPassword>
-            <EDSProfile>insert EDS credential</EDSProfile>           
-        </User>
-        <User>
-            <ClientUser>Client Credential UserId</ClientUser>
-            <EDSUserID>insert EDS credential</EDSUserID>
-            <EDSPassword>insert EDS credential</EDSPassword>
-            <EDSProfile>insert EDS credential</EDSProfile>           
-        </User>       
+		<ClientUser>xxxxx</ClientUser>
+		<EDSUserID>xxxxx</EDSUserID>
+		<EDSPassword>xxxx</EDSPassword>
+		<EDSProfile>xxxxx</EDSProfile>           
     </EDSCredentials>
+	<ipaddresses>
+		<ip>127.0.0.1</ip>
+		<ip>192.168.1</ip>
+		<ip>192.168.2.1</ip>
+	</ipaddresses>
 </Config>

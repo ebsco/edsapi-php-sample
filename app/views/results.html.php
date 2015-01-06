@@ -31,19 +31,9 @@ $encodedHighLigtTerm = http_build_query(array('highlight'=>$searchTerm));
             $selected3 = "selected = 'selected'";
         } ?>
         <select name="fieldcode">
-        <option id="type-keyword" name="fieldcode" value="keyword" <?php echo $selected1 ?> >Keyword</option>
-        <?php if(!empty($Info['search'])){ ?>
-        <?php foreach($Info['search'] as $searchField){
-              if($searchField['Label']=='Author'){
-                  $fieldc= $searchField['Code']; ?>
-                  <option id="type-author" name="fieldcode" value="<?php echo $fieldc; ?>"<?php echo $selected2; ?> >Author</option>
-        <?php }
-              if($searchField['Label']=='Title'){
-                  $fieldc = $searchField['Code']; ?>
-                  <option id="type-title" name="fieldcode" value="<?php echo $fieldc; ?>"<?php echo $selected3 ?> >Title</option>     
-        <?php      }
-              } ?>
-        <?php } ?>             
+			<option id="type-keyword" name="fieldcode" value="keyword" <?php echo $selected1 ?> >Keyword</option>
+            <option id="type-author" name="fieldcode" value="AU"<?php echo $selected2; ?> >Author</option>
+            <option id="type-title" name="fieldcode" value="TI"<?php echo $selected3 ?> >Title</option>                
         </select>
         <input type="submit" value="Search" />
         
@@ -57,7 +47,7 @@ $encodedHighLigtTerm = http_build_query(array('highlight'=>$searchTerm));
             
 <?php if(!empty($results['appliedFacets'])||!empty($results['appliedLimiters'])||!empty($results['appliedExpanders'])){ ?>
 <div class="filters">
-    <strong>Remove Facets</strong>
+    <strong>Current filters</strong>
     <ul class="filters">
 <!-- applied facets -->
         <?php if (!empty($results['appliedFacets'])) { ?>
@@ -95,13 +85,15 @@ $encodedHighLigtTerm = http_build_query(array('highlight'=>$searchTerm));
         <?php if (!empty($results['appliedExpanders'])) { ?>
         <?php foreach ($results['appliedExpanders'] as $filter) {
                     $expanderLabel = '';
-                    foreach($Info['expanders'] as $exp){
-                        if($exp['Id']==$filter['Id']){
-                            $expanderLabel = $exp['Label'];
-                            break;
-                        }
-                    }
-                    $action = http_build_query(array('action'=>$filter['removeAction']));
+					if (isset($Info['expanders'])) {
+						foreach($Info['expanders'] as $exp){
+							if($exp['Id']==$filter['Id']){
+								$expanderLabel = $exp['Label'];
+								break;
+							}
+						}
+						$action = http_build_query(array('action'=>$filter['removeAction']));
+					}
              ?>
         <li>
         <a href="<?php echo $refineSearchUrl.'&'.$queryStringUrl.'&'.$action; ?>">                 
@@ -151,7 +143,8 @@ $encodedHighLigtTerm = http_build_query(array('highlight'=>$searchTerm));
                 </dl>
                 <dl class="facet-label">
                 <form action="expander.php">
-                    <?php foreach($Info['expanders'] as $exp){
+                    <?php 
+					foreach($Info['expanders'] as $exp){
                        if(empty($results['appliedExpanders'])){ ?>
                            <dd><input type="checkbox" value="<?php echo $exp['Action'];?>" name="<?php echo $exp['Id']; ?>" /><?php echo $exp['Label'];?></dd>
                     <?php }else{
@@ -178,44 +171,39 @@ $encodedHighLigtTerm = http_build_query(array('highlight'=>$searchTerm));
 </div>            
 <?php if (!empty($results['facets'])) { $i=0; ?>
     <div class="facets">
-        <?php foreach ($results['facets'] as $facet) { $i++; ?>
+        <?php 
+		foreach ($results['facets'] as $facet) { $i++; 
+			if(!empty($facet['Label'])){ ?>
+				<script type="text/javascript">            
+					jQuery(document).ready(function(){             
+						 jQuery("#flip<?php echo $i ?>").click(function(){              
+							 jQuery("#panel<?php echo $i ?>").slideToggle("slow");
+							 if(jQuery("#plus<?php echo $i ?>").html()=='[+]'){
+								 jQuery("#plus<?php echo $i ?>").html('[-]');
+							 }else{
+								 jQuery("#plus<?php echo $i ?>").html('[+]');
+							 }
+						 });   
+					});
+				</script>
         
-        <?php if(!empty($facet['Label'])){ ?>
-        <script type="text/javascript">            
-                 $(document).ready(function(){             
-                 $("#flip<?php echo $i ?>").click(function(){              
-                 $("#panel<?php echo $i ?>").slideToggle("slow");
-                 if($("#plus<?php echo $i ?>").html()=='[+]'){
-                     $("#plus<?php echo $i ?>").html('[-]');
-                 }else{
-                     $("#plus<?php echo $i ?>").html('[+]');
-                 }
-                 
-                 });   
-                });
-        </script>
-        
-            <div class="facet" style="font-size: 80%">                
-                <dl class="facet-label" id="flip<?php echo $i ?>">
-                    <dt><span style="font-weight: lighter" id="plus<?php echo $i ?>">[+]</span><?php echo $facet['Label']; ?></dt>
-                </dl>
-                <dl class="facet-values" id="panel<?php echo $i ?>">
-                    
-                        
-                    <?php foreach ($facet['Values'] as $facetValue) { 
-                     $action = http_build_query(array('action'=>$facetValue['Action']));
-                    ?>
-                        <dd>
-                                                     
-                            <a href="<?php echo $refineSearchUrl.'&'.$queryStringUrl.'&'.$action; ?>">
-                             
-                                <?php echo $facetValue['Value']; ?>
-                            </a>
-                            (<?php echo $facetValue['Count']; ?>)
-                        </dd>
-                    <?php } ?>                  
-                </dl>
-            </div>
+				<div class="facet" style="font-size: 80%">                
+					<dl class="facet-label" id="flip<?php echo $i ?>">
+						<dt><span style="font-weight: lighter" id="plus<?php echo $i ?>">[+]</span><?php echo $facet['Label']; ?></dt>
+					</dl>
+					<dl class="facet-values" id="panel<?php echo $i ?>">
+	   
+						<?php 
+							foreach ($facet['Values'] as $facetValue) { 
+								$action = http_build_query(array('action'=>$facetValue['Action']));
+								echo '<dd>'
+									.'	<a href="'.$refineSearchUrl.'&'.$queryStringUrl.'&'.$action.'">'.$facetValue['Value'].'</a>('.$facetValue['Count'].')'
+									.'</dd>'
+									;
+							} 
+						?>                  
+					</dl>
+				</div>
           <?php } ?>
         <?php } ?>
     </div>
@@ -223,18 +211,19 @@ $encodedHighLigtTerm = http_build_query(array('highlight'=>$searchTerm));
 
         </div>
 <div class="table-cell">
-<?php if($debug=='y'){?>
-    <div style="float:right"><a target="_blank" href="debug.php?result=y">Search response XML</a></div>
-<?php } ?>
+<?php 
+	if($debug=='y'){
+		echo '<div style="float:right"><a target="_blank" href="debug.php?result=y">Search response XML</a></div>';
+	} ?>
 <div class="top-menu">
     <h2>Results</h2> 
-<?php if ($error) { ?>
-    <div class="error">
-        <?php echo $error; ?>
-    </div>
-<?php } ?>
+<?php 
 
-<?php if (!empty($results)) { ?>
+	if ($error) { 
+		echo '<div class="error">'.$error.'</div>';
+	} 
+
+ if (!empty($results)) { ?>
     <div class="statistics">
         Showing <strong><?php if($results['recordCount']>0){ echo ($start - 1) * $limit + 1;} else { echo 0; } ?>  - <?php if((($start - 1) * $limit + $limit)>=$results['recordCount']){ echo $results['recordCount']; } else { echo ($start - 1) * $limit + $limit;} ?></strong>  
             of <strong><?php echo $results['recordCount']; ?></strong>
@@ -259,20 +248,21 @@ $encodedHighLigtTerm = http_build_query(array('highlight'=>$searchTerm));
                     </form>
                 </li>
                  <li class="options-controls-li">
-                      <?php $option = array(
+                      <?php 
+						$option = array(
                           'Detailed' => '',
                           'Brief' => '',
                           'Title' => '',                      
-                          );
-                              if($amount== 'detailed'){
-                                  $option['Detailed']= '  selected="selected"';
-                              }
-                              if($amount== 'brief'){
-                                  $option['Brief']= '  selected="selected"';
-                              }
-                              if($amount== 'title'){
-                                  $option['Title']= '  selected="selected"';
-                              }                              
+                        );
+						if($amount== 'detailed'){
+							$option['Detailed']= '  selected="selected"';
+						}
+						if($amount== 'brief'){
+							$option['Brief']= '  selected="selected"';
+						}
+						if($amount== 'title'){
+							$option['Title']= '  selected="selected"';
+						}                              
                     ?>    
                     <form action="pageOptions.php">
                         <label><b>Page options</b></label>
@@ -287,32 +277,33 @@ $encodedHighLigtTerm = http_build_query(array('highlight'=>$searchTerm));
                  </li>
                     <li class="options-controls-li">
                     
-                    <?php $select = array(
-                          '5' => '',
-                          '10' => '',
-                        '20' => '',
-                        '30' => '',
-                        '40' => '',
-                        '50' => ''
-                    );
-                              if($limit== 5){
-                                  $select['5']= '  selected="selected"';
-                              }
-                              if($limit== 10){
-                                  $select['10']= '  selected="selected"';
-                              }
-                              if($limit== 20){
-                                  $select['20']= '  selected="selected"';
-                              }
-                              if($limit== 30){
-                                  $select['30']= '  selected="selected"';
-                              }
-                              if($limit== 40){
-                                  $select['40']= '  selected="selected"';
-                              }
-                              if($limit== 50){
-                                  $select['50']= '  selected="selected"';
-                              }                          
+                    <?php 
+						$select = array(
+							'5' => '',
+							'10' => '',
+							'20' => '',
+							'30' => '',
+							'40' => '',
+							'50' => ''
+						);
+						if($limit== 5){
+						  $select['5']= '  selected="selected"';
+						}
+						if($limit== 10){
+						  $select['10']= '  selected="selected"';
+						}
+						if($limit== 20){
+						  $select['20']= '  selected="selected"';
+						}
+						if($limit== 30){
+						  $select['30']= '  selected="selected"';
+						}
+						if($limit== 40){
+						  $select['40']= '  selected="selected"';
+						}
+						if($limit== 50){
+						  $select['50']= '  selected="selected"';
+						}                          
                     ?>                          
                      <form action="pageOptions.php">
                         <label><b>Results per page</b></label>
@@ -331,9 +322,57 @@ $encodedHighLigtTerm = http_build_query(array('highlight'=>$searchTerm));
                 </ul>
         </div>
      </div>
-<div style="text-align: center">
-    <div class="pagination"><?php echo paginate($results['recordCount'], $limit, $start, $encodedSearchTerm, $fieldCode); ?></div>
-</div>
+	 
+	<div style="text-align: center">
+		<div class="pagination"><?php echo paginate($results['recordCount'], $limit, $start, $encodedSearchTerm, $fieldCode); ?></div>
+	</div>
+	 
+	<!-- begin research starters -->
+
+
+		<?php
+			// check if the research starters are returned
+			if (isset($results['relatedRecords'][0]["records"][0])) {
+				$rs=$results['relatedRecords'][0]["records"][0]; // only the first RS
+				echo '<img alt="" src="'.$rs["ImageInfo"].'" style="float:left;padding:5px;">';
+				$rsHtml ='<div class="rsbox">'
+						.'<span class="rsIntro">'.$results['relatedRecords'][0]["Label"].'</span><br/>'
+						;
+				foreach($rs["Items"] as $item) {
+					if ($item["Group"]=="Au") {continue;}
+					if ($item["Group"]=="Su") {continue;}
+					if ($item["Group"]=="Src") {continue;}
+					switch ($item["Label"]) {
+						case "Title":
+							$rsHtml.='<span class="rstitle">'.$item["Data"].'</span><br/>';
+							break;						
+						case "Abstract":
+							$l="researchstarter.php?db=".$rs['DbId']."&an=".$rs['An']."&".$encodedHighLigtTerm."&".$encodedSearchTerm."&fieldcode=".$fieldCode;                         
+                            $rsHtml.='<span>'.$item["Data"].'(<a href="'.$l.'">more</a>)</span><br/>';
+							break;
+						default:
+							$rsHtml.='<span>'.$item["Data"].'</span><br/>';
+					}
+				}
+				
+				foreach($rs["Items"] as $item) {
+					switch ($item["Group"]) {			
+						case "Src":
+							$rsHtml.='<span class="rsSource">'.$item["Data"].'</span><br/>';
+							break;
+					}
+				}	
+			
+				$rsHtml.='<span style="clear:both"/>';
+				$rsHtml.='</div><br/>';
+						;
+				echo $rsHtml;
+				//var_dump($results['relatedRecords'][0]["records"]);
+			}		
+		?>
+
+	<!-- end research starters -->
+
 <?php } ?>
 
 <div class="results table">
@@ -367,9 +406,11 @@ $encodedHighLigtTerm = http_build_query(array('highlight'=>$searchTerm));
                 <div class="info table-cell">
                     <div style="margin-left: 10px">
                         
-                        <?php if((!isset($_COOKIE['login']))&&$result['AccessLevel']==1){ ?>
+                        <?php 
+						if(!(isset($_SESSION['login']) ||(validAuthIP("Config.xml")==true)) &&$result['AccessLevel']==1){ ?>
                             <p>This record from <b>[<?php echo $result['DbLabel'] ?>]</b> cannot be displayed to guests.<a href="login.php?path=results&<?php echo $encodedSearchTerm;?>&fieldcode=<?php echo $fieldCode; ?>">Login</a> for full access.</p>
-                       <?php }else{  ?>
+                       <?php }
+					   else{  ?>
                         <div class="title">                     
                             <?php if (!empty($result['RecordInfo']['BibEntity']['Titles'])){ ?>
                             <?php foreach($result['RecordInfo']['BibEntity']['Titles'] as $Ti){ ?> 
@@ -379,188 +420,210 @@ $encodedHighLigtTerm = http_build_query(array('highlight'=>$searchTerm));
                             <a href="record.php?db=<?php echo $result['DbId']; ?>&an=<?php echo $result['An']; ?>&<?php echo $encodedHighLigtTerm ?>&resultId=<?php echo $result['ResultId'];?>&recordCount=<?php echo $results['recordCount']; ?>&<?php echo $encodedSearchTerm;?>&fieldcode=<?php echo $fieldCode; ?>"><?php echo "Title is not Aavailable"; ?></a>                   
                           <?php  } ?>                
                         </div>
-                        <?php if(!empty($result['Items']['TiAtl'])){ ?>
-                        <div>
-                        <?php foreach($result['Items']['TiAtl'] as $TiAtl){ 
-                              echo $TiAtl['Data']; 
-                              } ?>
-                        </div>
-                        <?php } ?>
-                        <?php if (!empty($result['Items']['Au'])) { ?>
-                        <div class="authors">
-                            <span>
-                                <span style="font-style: italic;">By : </span>                                            
-                                 <?php foreach($result['Items']['Au'] as $Author){ ?>                                    
-                                    <?php echo $Author['Data']; ?>;                                
-                                 <?php } ?>
-                            </span>                        
-                        </div>                        
-                        <?php } ?>
+						
+                        <?php 
+						
+						if(!empty($result['Items']['TiAtl'])){ 
+								echo "<div>";
+								foreach($result['Items']['TiAtl'] as $TiAtl){ 
+									echo $TiAtl['Data']; 
+								} 
+								echo "</div>";
+                        } 
+						
+						if (!empty($result['Items']['Au'])) { ?>
+							<div class="authors">
+								<span>
+									<span style="font-style: italic;">By : </span>                                            
+									<?php 
+									foreach($result['Items']['Au'] as $Author){ 
+										echo $Author['Data']; 
+									} 
+									?>
+								</span>                        
+							</div>                        
+                        <?php 
+						} 
+						?>
+						
                         <div class="authors">
                         <span style="font-style: italic; ">
-                        <?php if(isset($result['RecordInfo']['BibRelationships']['IsPartOfRelationships']['Titles'])){?>                                                 
-                             <?php foreach($result['RecordInfo']['BibRelationships']['IsPartOfRelationships']['Titles'] as $title){ ?>
-                               <?php echo $title['TitleFull']?>,                                  
-                        <?php }}?>
+						<?php 
+							if(isset($result['RecordInfo']['BibRelationships']['IsPartOfRelationships']['Titles'])){
+								foreach($result['RecordInfo']['BibRelationships']['IsPartOfRelationships']['Titles'] as $title){ 
+									echo $title['TitleFull'].",";                                  
+								}
+							}
+						?>
                         </span>
-                        <?php if(!empty($result['RecordInfo']['BibEntity']['Identifiers'])){
-                                 foreach($result['RecordInfo']['BibEntity']['Identifiers'] as $identifier){
-                                     $pieces = explode('-',$identifier['Type']); 
-                                     if(isset($pieces[1])){                                       
-                                       echo strtoupper($pieces[0]).'-'.ucfirst( $pieces[1]);                                       
-                                       }else{ 
-                                       echo strtoupper($pieces[0]);
-                                       }?>: <?php echo $identifier['Value']?>,                                                                
-                        <?php }} ?>
-                        <?php if(isset($result['RecordInfo']['BibRelationships']['IsPartOfRelationships']['Identifiers'])){?>
-                             <?php foreach($result['RecordInfo']['BibRelationships']['IsPartOfRelationships']['Identifiers'] as $identifier){
-                                    $pieces = explode('-',$identifier['Type']);
-                                    if(isset($pieces[1])){                                        
-                                       echo strtoupper( $pieces[0]).'-'.ucfirst( $pieces[1]);                                       
-                                       }else{ 
-                                       echo strtoupper($pieces[0]);
-                                       }?>: <?php echo $identifier['Value']?>, 
-                             <?php }?>  
-                        <?php }?>
-                        <?php if(isset($result['RecordInfo']['BibRelationships']['IsPartOfRelationships']['date'])){?>
-                             <?php foreach($result['RecordInfo']['BibRelationships']['IsPartOfRelationships']['date'] as $date){ ?>
-                                 Published: <?php echo $date['M']?>/<?php echo $date['D']?>/<?php echo $date['Y']?>, 
-                             <?php }?> 
-                        <?php }?>
-                        <?php if(isset($result['RecordInfo']['BibRelationships']['IsPartOfRelationships']['numbering'])){ 
-                                foreach($result['RecordInfo']['BibRelationships']['IsPartOfRelationships']['numbering'] as $number){?>
-                                  <?php $type = str_replace('volume','Vol',$number['Type']); $type = str_replace('issue','Issue',$type); ?>
-                                    <?php echo $type;?>: <?php echo $number['Value']; ?>, 
-                        <?php } } ?>
-                        <?php if(!empty($result['RecordInfo']['BibEntity']['PhysicalDescription']['StartPage'])){?>
-                                 Start Page: <?php echo $result['RecordInfo']['BibEntity']['PhysicalDescription']['StartPage']?>, 
-                        <?php } ?>                        
-                        <?php if(!empty($result['RecordInfo']['BibEntity']['PhysicalDescription']['Pagination'])){ ?>
-                                 Page Count: <?php echo $result['RecordInfo']['BibEntity']['PhysicalDescription']['Pagination']?>, 
-                        <?php } ?>
-                        <?php if(!empty($result['RecordInfo']['BibEntity']['Languages'])){ ?>
-                        <?php foreach($result['RecordInfo']['BibEntity']['Languages'] as $language){ ?> 
-                                 Language: <?php echo $language['Text']?>
-                        <?php } }?>
+                        <?php 
+						
+						if(!empty($result['RecordInfo']['BibEntity']['Identifiers'])){
+							foreach($result['RecordInfo']['BibEntity']['Identifiers'] as $identifier){
+								$pieces = explode('-',$identifier['Type']); 
+								if(isset($pieces[1])){                                       
+								   echo strtoupper($pieces[0]).'-'.ucfirst( $pieces[1]);                                       
+								}
+								else{ 
+								   echo strtoupper($pieces[0]);
+								}
+								echo ":".$identifier['Value'].",";                                                                
+							}
+						} 
+						
+						if(isset($result['RecordInfo']['BibRelationships']['IsPartOfRelationships']['Identifiers'])){
+                            foreach($result['RecordInfo']['BibRelationships']['IsPartOfRelationships']['Identifiers'] as $identifier){
+								$pieces = explode('-',$identifier['Type']);
+								if(isset($pieces[1])){                                        
+									echo strtoupper( $pieces[0]).'-'.ucfirst( $pieces[1]);                                       
+								}
+								else{ 
+									echo strtoupper($pieces[0]);
+								}
+								echo ": ".$identifier['Value'].","; 
+                            }  
+                        }
+						
+						if(isset($result['RecordInfo']['BibRelationships']['IsPartOfRelationships']['date'])){
+							foreach($result['RecordInfo']['BibRelationships']['IsPartOfRelationships']['date'] as $date){ 
+								if ($date["Type"]=='published') {
+									echo "Published: ".$date['M']."/".$date['D']."/".$date['Y'].",";
+								}
+							}
+						}
+							
+						if(isset($result['RecordInfo']['BibRelationships']['IsPartOfRelationships']['numbering'])){ 
+							foreach($result['RecordInfo']['BibRelationships']['IsPartOfRelationships']['numbering'] as $number){
+								$type = str_replace('volume','Vol',$number['Type']); $type = str_replace('issue','Issue',$type); 
+								echo $type.": ".$number['Value'].","; 
+							} 
+						} 
+							
+						if(!empty($result['RecordInfo']['BibEntity']['PhysicalDescription']['StartPage'])){
+							 echo 'Start Page: '.$result['RecordInfo']['BibEntity']['PhysicalDescription']['StartPage'].','; 
+						} 
+							
+						if(!empty($result['RecordInfo']['BibEntity']['PhysicalDescription']['Pagination'])){ 
+                            echo 'Page Count: '.$result['RecordInfo']['BibEntity']['PhysicalDescription']['Pagination'].","; 
+                        } 
+						
+						if(!empty($result['RecordInfo']['BibEntity']['Languages'])){ 
+							foreach($result['RecordInfo']['BibEntity']['Languages'] as $language){ 
+							 echo "Language: ".$language['Text'];
+							} 
+						}
+						?>
                         </div>
                         <?php if (isset($result['Items']['Ab'])) { ?>
-             <script type="text/javascript">            
-                 $(document).ready(function(){             
-                 $("#abstract-plug<?php echo $result['ResultId']; ?>").click(function(){              
-                     $("#full-abstract<?php echo $result['ResultId']; ?>").show() ; 
-                     $("#abstract<?php echo $result['ResultId']; ?>").hide() ; 
-                 }); 
-                 $("#full-abstract-plug<?php echo $result['ResultId']; ?>").click(function(){              
-                     $("#full-abstract<?php echo $result['ResultId']; ?>").hide() ; 
-                     $("#abstract<?php echo $result['ResultId']; ?>").show() ; 
-                 });   
-                });
-             </script>
+						
+						
+						 <script type="text/javascript">            
+							 jQuery(document).ready(function(){             
+							 jQuery("#abstract-plug<?php echo $result['ResultId']; ?>").click(function(){              
+								 jQuery("#full-abstract<?php echo $result['ResultId']; ?>").show() ; 
+								 jQuery("#abstract<?php echo $result['ResultId']; ?>").hide() ; 
+							 }); 
+							 jQuery("#full-abstract-plug<?php echo $result['ResultId']; ?>").click(function(){              
+								 jQuery("#full-abstract<?php echo $result['ResultId']; ?>").hide() ; 
+								 jQuery("#abstract<?php echo $result['ResultId']; ?>").show() ; 
+							 });   
+							});
+						 </script>
+			 
                         <div id="abstract<?php echo $result['ResultId'];?>" class="abstract">
                             <span>
                                 <span style="font-style: italic;">Abstract: </span>                                    
-                                      <?php foreach($result['Items']['Ab'] as $Abstract){ ?>                                            
-                                                     <?php
-                                                      $xml ="Config.xml";
-                                                      $dom = new DOMDocument();
-                                                      $dom->load($xml);      
-                                                      $length = $dom ->getElementsByTagName('AbstractLength')->item(0)->nodeValue;      
-                                                      if($length == 'Full'){
-                                                            echo $Abstract['Data'];
-                                                      }else{
-                                                            $data = str_replace(array('<span class="highlight">','</span>'), array('',''), $Abstract['Data']);
-                                                            $data = substr($data, 0, $length).'...';
-                                                            
-                                                            echo $data;
-                                                      }
-                                                     ?>                                                
-                                            <?php } ?>                                  
-                                        
-                                    <span id="abstract-plug<?php echo $result['ResultId'];?>">[+]</span>                                
+								<?php 
+									foreach($result['Items']['Ab'] as $Abstract){ 
+										$xml ="Config.xml";
+										$dom = new DOMDocument();
+										$dom->load($xml);      
+										$length = $dom ->getElementsByTagName('AbstractLength')->item(0)->nodeValue;      
+										if($length == 'Full'){
+											echo $Abstract['Data'];
+										}
+										else
+										{
+											$data = str_replace(array('<span class="highlight">','</span>'), array('',''), $Abstract['Data']);
+											$data = substr($data, 0, $length).'...';
+											echo $data;
+										}
+									} 
+								?>                                  
+                                <span id="abstract-plug<?php echo $result['ResultId'];?>">[+]</span>                                
                             </span>
                         </div>
                         <div id="full-abstract<?php echo $result['ResultId'];?>" class="full-abstract">
                             <span>
                                     <span style="font-style: italic;">Abstract: </span>
-                                          <?php foreach($result['Items']['Ab'] as $Abstract){ ?>                                          
-                                               <?php echo $Abstract['Data']; ?>                                                                                                                                                   
-                                          <?php } ?>                                        
+									<?php 
+										foreach($result['Items']['Ab'] as $Abstract){ 
+											echo $Abstract['Data']; 
+										} 
+									?>                                        
                                     <span id="full-abstract-plug<?php echo $result['ResultId'];?>">[-]</span>
                                 </tr>
                             </span>
                         </div>
-                      <?php } ?>
-                      <?php if (!empty($result['Items']['Su'])) { ?>
+                      <?php } 
+					  if (!empty($result['Items']['Su'])) { ?>
                         <div class="subjects">
                             <span>
-                                    <span style="font-style: italic;">Subjects:</span>
-                                             <?php foreach($result['Items']['Su'] as $Subject){ ?>
-                                            <?php echo $Subject['Data']; ?>; 
-                                             <?php } ?> 
+								<span style="font-style: italic;">Subjects:</span>
+								<?php 
+									foreach($result['Items']['Su'] as $Subject){ 
+										echo $Subject['Data']; 
+									} 
+								?> 
                             </span>
                         </div>
                       <?php } ?>
                       <div class="links">
-                         <?php if($result['HTML']==1){?> 
-                          <?php if((!isset($_COOKIE['login']))&&$result['AccessLevel']==2){ ?> 
-                        <a target="_blank" class="icon html fulltext" href="login.php?path=HTML&an=<?php echo $result['An']; ?>&db=<?php echo $result['DbId']; ?>&<?php echo $encodedHighLigtTerm ?>&resultId=<?php echo $result['ResultId'];?>&recordCount=<?php echo $results['recordCount']?>&<?php echo $encodedSearchTerm;?>&fieldcode=<?php echo $fieldCode; ?>">Full Text</a>
-                          <?php } else{?>
-                        <a target="_blank" class="icon html fulltext" href="record.php?an=<?php echo $result['An']; ?>&db=<?php echo $result['DbId']; ?>&<?php echo $encodedHighLigtTerm ?>&resultId=<?php echo $result['ResultId'];?>&recordCount=<?php echo $results['recordCount']?>&<?php echo $encodedSearchTerm;?>&fieldcode=<?php echo $fieldCode; ?>#html">Full Text</a>
-                         <?php } ?>                          
-                        <?php } ?>
-                        <?php if(!empty($result['PDF'])){?> 
-                          <a target="_blank" class="icon pdf fulltext" href="PDF.php?an=<?php echo $result['An']?>&db=<?php echo $result['DbId']?>">Full Text</a>
-                        <?php } ?>
-                      </div>
-                      <?php if (!empty($result['CustomLinks'])){ ?>
-                      <div class="custom-links">
-                      <?php if (count($result['CustomLinks'])<=3){?> 
-                    
-                            <?php foreach ($result['CustomLinks'] as $customLink) { ?>
-                                <p>
-                                 <a href="<?php echo $customLink['Url']; ?>" title="<?php echo $customLink['MouseOverText']; ?>"><img src="<?php echo $customLink['Icon']?>" /> <?php echo $customLink['Name']; ?></a>
-                                </p>
-                            <?php } ?>
-                    
-                      <?php } else {?>
-                    
-                            <?php for($i=0; $i<3 ; $i++){
-                                $customLink = $result['CustomLinks'][$i];
-                                ?>
-                                <p> 
-                                   <a href="<?php echo $customLink['Url']; ?>" title="<?php echo $customLink['MouseOverText']; ?>"><?php echo $customLink['Name']; ?></a>
-                                </p>
-                            <?php } ?>
-                    
-                      <?php } ?>                   
+                        <?php 
+						if($result['HTML']==1){
+							if  ( !(isset($_SESSION['login']) || validAuthIP("Config.xml")==true)  && $result['AccessLevel']==2){ 
+								echo '<a target="_blank" class="icon html fulltext" href="login.php?path=HTML&an='.$result['An'].'&db='.$result['DbId'].'&'.$encodedHighLigtTerm.'&resultId='.$result['ResultId'].'&recordCount='.$results['recordCount'].'&'.$encodedSearchTerm.'&fieldcode='.$fieldCode.'">Full Text</a>';
+							} 
+							else
+							{
+								echo '<a target="_blank" class="icon html fulltext" href="record.php?an='.$result['An'].'&db='.$result['DbId'].'&'.$encodedHighLigtTerm.'&resultId='.$result['ResultId'].'&recordCount='.$results['recordCount'].'&'.$encodedSearchTerm.'&fieldcode='.$fieldCode.'#html">Full Text</a>';
+							} 
+						} 
+						
+						if(!empty($result['PDF'])){
+							echo '<a target="_blank" class="icon pdf fulltext" href="PDF.php?an='.$result['An'].'&db='.$result['DbId'].'">Full Text</a>';
+                        } 
+
+						if (!empty($result['CustomLinks'])){  
+							foreach ($result['CustomLinks'] as $customLink) { 
+								echo '<a href="'.$customLink['Url'].'" title="'.$customLink['MouseOverText'].'>" target="_blank">';
+								if ($customLink['Icon']!="") {
+									echo '<img src="'.$customLink['Icon'].'" />';
+								}
+								echo $customLink['Text'].'</a>';
+								
+							 //echo '<a href="'.$customLink['Url'].'" title="'.$customLink['MouseOverText'].'" target="_blank"><img src="'.$customLink['Icon'].'" />'.$customLink['Text'].'</a>';
+							} 
+						}							
+						?>                   
                       </div>                      
-                      <?php } ?>
-                      <?php if (!empty($result['FullTextCustomLinks'])){ ?>
-                      <div class="custom-links">
-                      <?php if (count($result['FullTextCustomLinks'])<=3){?>                     
-                            <?php foreach ($result['FullTextCustomLinks'] as $customLink) { ?>
-                                <p>
-                                 <a href="<?php echo $customLink['Url']; ?>" title="<?php echo $customLink['MouseOverText']; ?>"><img src="<?php echo $customLink['Icon']?>" /> <?php echo $customLink['Name']; ?></a>
-                                </p>
-                            <?php } ?>                    
-                      <?php } else {?>                    
-                            <?php for($i=0; $i<3 ; $i++){
-                                $customLink = $result['FullTextCustomLinks'][$i];
-                                ?>
-                                <p> 
-                                   <a href="<?php echo $customLink['Url']; ?>" title="<?php echo $customLink['MouseOverText']; ?>"><?php echo $customLink['Name']; ?></a>
-                                </p>
-                            <?php } ?>
-                    
-                      <?php } ?>                   
-                      </div>                     
-                      <?php } ?>
-                      <?php } ?>
+                      <?php 
+					   
+						if (!empty($result['FullTextCustomLinks'])){ 
+							foreach ($result['FullTextCustomLinks'] as $customLink) { 
+								echo '<a href="'.$customLink['Url'].'" title="'.$customLink['MouseOverText'].'>" target="_blank">';
+								if ($customLink['Icon']!="") {
+									echo '<img src="'.$customLink['Icon'].'" />';
+								}
+								echo $customLink['Text'].'</a>';
+							}
+						} 
+					} ?>
                 </div>
                 </div>
             </div>
-        <?php } ?>
-    <?php } ?>
+        <?php } 
+		} ?>
 </div>
 <?php if (!empty($results)) { ?>
     <div style="text-align: center">

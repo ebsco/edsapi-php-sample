@@ -358,9 +358,17 @@ ul.filters {
 .links {
     margin-bottom: 10px;
 }
+.links a{
+    margin-bottom: 10px;
+	padding-left:10px;
+}
 
 .custom-links {
     margin-bottom: 50px;
+}
+
+.custom-links a {
+    padding-left: 10px;
 }
 
 .custom-links ul {
@@ -587,6 +595,8 @@ ul.filters {
 
 .jacket {
     float: left;
+	padding-left:10px;
+	padding-right:10px;
 }
 
 /* General */
@@ -630,9 +640,7 @@ ul.filters {
 .table-cell-box li {
     padding: 5px 0;
 }
-.icon.pdf {
-    background-position: 0 -84px;
-}
+
 
 .icon {
     background: url("../web/sprites_32.png") no-repeat scroll left top transparent;
@@ -645,11 +653,33 @@ ul.filters {
 .icon.html {
     background-position: 0 -42px;
 }
+.icon.pdf {
+    background-position: 0 -84px;
+}
 
-.icon {
-    background: url("../web/sprites_32.png") no-repeat scroll left top transparent;
-    display: inline-block;
-    height: 32px;
-    line-height: 32px;
-    padding-left: 36px;
+.icon.pdf.fulltext ,.icon.html.fulltext {
+	padding-left:35px;
+}
+
+.rsbox {
+	border : 1px solid black;
+	padding:5px;
+	font-size: 12px;
+	line-height: 130%;
+	display:block;
+}
+.rsIntro { 
+	font-size:13px;
+	font-weight:bold;
+}
+
+.rstitle {
+	font-size:15px;
+	font-weight:bold;
+}
+
+.rsSource {
+	font-size:12px;
+	font-style:italic;
+	margin-top:10px;
 }

@@ -112,27 +112,18 @@ class EBSCOConnector
      */
     public function __construct()
     {        
-      $xml ="Config.xml";
-      $dom = new DOMDocument();
-      $dom->load($xml);      
-      
-      self::$end_point = $dom->getElementsByTagName('EndPoint')->item(0)->nodeValue;
-      self::$authentication_end_point=$dom->getElementsByTagName('AuthenticationEndPoint')->item(0)->nodeValue;
+		$xml ="Config.xml";
+		$dom = simplexml_load_file($xml);
+		  
+		self::$end_point = $dom->EndPoints->EndPoint;
+		self::$authentication_end_point=$dom->EndPoints->AuthenticationEndPoint;
                           
-            $EDSCredentials = $dom ->getElementsByTagName('EDSCredentials')->item(0);
-            $users = $EDSCredentials -> getElementsByTagName('User');
-            
-            foreach($users as $user){
-               $userType = $user->getElementsByTagName('ClientUser')->item(0)->nodeValue;
-                if($userType == 'guest'){
-                $this->userId = $user -> getElementsByTagName('EDSUserID')->item(0)->nodeValue;
-                $this->password = $user -> getElementsByTagName('EDSPassword')->item(0)->nodeValue;                
-                $this->interfaceId = '';
-                $this->orgId = '';
-                break;
-                }
-            }
-        }
+		$EDSCredentials = $dom ->EDSCredentials;
+		$this->userId = (string)$EDSCredentials -> EDSUserID;
+		$this->password = (string)$EDSCredentials -> EDSPassword;
+		$this->interfaceId = (string)$EDSCredentials -> EDSProfile;
+		$this->orgId = '';
+	}
     
 
 
@@ -156,10 +147,11 @@ class EBSCOConnector
 </UIDAuthRequestMessage>
 BODY;
 
+
         // Set the content type to 'application/xml'. Important, otherwise cURL will use the usual POST content type.
         $headers = array(
             'Content-Type: application/xml',
-            'Conent-Length: ' . strlen($params)
+            'Content-Length: ' . strlen($params)
         );
 
         $response = $this->request($url, $params, $headers, 'POST');
@@ -175,18 +167,20 @@ BODY;
      * @return string   .The session token
      * @access public
      */
-    public function requestSessionToken($headers, $profile,$guest)
+    public function requestSessionToken($headers, $guest="y")
     {
         $url = self::$end_point . '/CreateSession';
         
         // Add the HTTP query parameters
         $params = array(
-            'profile' => $profile,
-            'org'     => $this->orgId,
-            'guest'   => $guest
+            "profile" => $this->interfaceId,
+            "org"     => $this->orgId,
+            "guest"   => $guest
         );
         $params = http_build_query($params);
+
         $response = $this->request($url, $params, $headers);
+
         return $response;
     }
     
