@@ -121,7 +121,8 @@ class EBSCOConnector
 		$EDSCredentials = $dom ->EDSCredentials;
 		$this->userId = (string)$EDSCredentials -> EDSUserID;
 		$this->password = (string)$EDSCredentials -> EDSPassword;
-		$this->interfaceId = (string)$EDSCredentials -> EDSProfile;
+        $this->interfaceId = (string)$EDSCredentials -> EDSProfile;
+        $_SESSION['autocomplete'] = (string)$dom->autocomplete;
 		$this->orgId = '';
 	}
     
@@ -144,6 +145,9 @@ class EBSCOConnector
     <UserId>{$this->userId}</UserId>
     <Password>{$this->password}</Password>
     <InterfaceId>{$this->interfaceId}</InterfaceId>
+    <Options>
+        <Option>autocomplete</Option>
+    </Options>
 </UIDAuthRequestMessage>
 BODY;
 

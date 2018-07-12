@@ -79,11 +79,13 @@ class EBSCOResponse
      {
         $token = (string) $this->response->AuthToken;
         $timeout = (integer) $this->response->AuthTimeout;
-
         $result = array(
             'authenticationToken'   => $token,
             'authenticationTimeout' => $timeout,
-            'authenticationTimeStamp'=> time()
+            'authenticationTimeStamp'=> time(),
+            'autocompleteToken' => (string)$this->response->Autocomplete->Token,
+            'autocompleteUrl'=> (string)$this->response->Autocomplete->Url,
+            'autocompleteCustId'=> (string)$this->response->Autocomplete->CustId
         );
         return $result;
      }

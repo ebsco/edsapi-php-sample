@@ -19,9 +19,9 @@ $encodedHighLigtTerm = http_build_query(array('highlight'=>$searchTerm));
 ?>
 <div id="toptabcontent">
     <div class="topSearchBox">
-        <form action="results.php">
+        <form action="results.php" id="searchform">
     <p>
-        <input type="text" name="query" style="width: 350px;" id="lookfor" value="<?php echo $searchTerm ?>"/>  
+        <input type="text" name="query" id="lookfor" value="<?php echo $searchTerm ?>"/>  
         <input type="hidden" name="expander" value="fulltext" />
         <?php 
         $selected1 = '';

@@ -178,20 +178,25 @@ class EBSCOAPI
             $_SESSION["authenticationToken"]= $result['authenticationToken'];
             $_SESSION["authenticationTimeout"]= $result['authenticationTimeout'];
             $_SESSION["authenticationTimeStamp"]= $result['authenticationTimeStamp'];
+            $_SESSION['autocompleteToken'] = $result['autocompleteToken'];
+            $_SESSION['autocompleteUrl'] = $result['autocompleteUrl'];
+            $_SESSION['autocompleteCustId'] = $result['autocompleteCustId'];
 		}
 
         if(time()-$timestamp >= $timeout){
-                $result = $this->apiAuthenticationToken();
-                $_SESSION["authenticationToken"]= $result['authenticationToken'];
-                $_SESSION["authenticationTimeout"]= $result['authenticationTimeout'];
-                $_SESSION["authenticationTimeStamp"]= $result['authenticationTimeStamp'];
+            $result = $this->apiAuthenticationToken();
+            $_SESSION["authenticationToken"]= $result['authenticationToken'];
+            $_SESSION["authenticationTimeout"]= $result['authenticationTimeout'];
+            $_SESSION["authenticationTimeStamp"]= $result['authenticationTimeStamp'];
+            $_SESSION['autocompleteToken'] = $result['autocompleteToken'];
+            $_SESSION['autocompleteUrl'] = $result['autocompleteUrl'];
+            $_SESSION['autocompleteCustId'] = $result['autocompleteCustId'];
 
-                return $result['authenticationToken'];
-			}
-		else
-			{
-                return $this->authToken;
-            }
+            return $result['authenticationToken'];
+		}
+		else{
+            return $this->authToken;
+        }
       
 	}
     

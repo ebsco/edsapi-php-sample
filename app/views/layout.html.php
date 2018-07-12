@@ -6,7 +6,14 @@
         <link rel="stylesheet" href="web/styles.css" type="text/css" media="screen" />
         <link rel="stylesheet" href="web/pubtype-icons.css" />
         <link rel="shortcut icon" href="web/favicon.ico" />
-        <script type="text/javascript" src="web/jquery.js" ></script>       
+        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js" ></script>
+        <?php
+        // if autocomplete is desired call in jQueryUI.js & jQueryUI.css
+        if(isset($_SESSION['autocomplete']) && $_SESSION['autocomplete'] == 'y'){
+            echo '<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>';
+            echo '<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">';
+        }
+        ?>     
     </head>
 
     <body>
@@ -111,5 +118,12 @@ $version = $dom ->getElementsByTagName('Version')->item(0)->nodeValue;
     position: relative;"><?php echo $version ?></div>
         </div>
         </div>
+        <?php
+        if(isset($_SESSION['autocomplete']) && $_SESSION['autocomplete'] == 'y'){
+        echo '<script>';
+        include_once('web/autocomplete.js.php');
+        echo '</script>';
+        }
+        ?>
     </body>
 </html>
