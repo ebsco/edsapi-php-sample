@@ -647,13 +647,18 @@ $encodedHighLigtTerm = http_build_query(array('highlight'=>$searchTerm));
                       <?php 
                       // support for Image Quick View
                       // these represent small icons of tables, figures, graphcs used in articles
-                      // to do: hyperlink and provide an appropriate preview mode
+                      // Note IQV will only show to authorized users with a link, all others only see thumbnail
                       if(isset($result['ImageQuickView'])){
                       ?>
                         <div class="imagequickview">
                         <?php
                             foreach($result['ImageQuickView'] as $iqv){
-                                echo '<a href="iqv.php?db='.$iqv['DbId'].'&an='.$iqv['An'].'"><img src="'.$iqv['Url'].'" class="iqvitem" alt="'.$iqv['Type'].'" title="'.$iqv['Type'].'"></a>';
+                                if(isset($_SESSION['login'])||isset($login)){
+                                    echo '<a href="iqv.php?db='.$iqv['DbId'].'&an='.$iqv['An'].'"><img src="'.$iqv['Url'].'" class="iqvitem" alt="'.$iqv['Type'].'" title="'.$iqv['Type'].'"></a>';
+                                }
+                                else{
+                                    echo '<img src="'.$iqv['Url'].'" class="iqvitem" alt="'.$iqv['Type'].'" title="'.$iqv['Type'].' / Please login for full access">';
+                                }                           
                             }
                         ?>
                         </div>
