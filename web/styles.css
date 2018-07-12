@@ -684,6 +684,12 @@ ul.filters {
 	margin-top:10px;
 }
 
+#rsimg{
+    float: left;
+    padding: 5px;
+    max-height: 90px;
+}
+
 .iqvitem{
     margin: 5px;
     border: 2px solid #bbb;

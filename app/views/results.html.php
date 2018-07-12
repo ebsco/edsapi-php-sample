@@ -395,10 +395,10 @@ $encodedHighLigtTerm = http_build_query(array('highlight'=>$searchTerm));
 
 
 		<?php
-			// check if the research starters are returned
+            // check if the research starters are returned
 			if (isset($results['relatedRecords'][0]["records"][0])) {
 				$rs=$results['relatedRecords'][0]["records"][0]; // only the first RS
-				echo '<img alt="" src="'.$rs["ImageInfo"].'" style="float:left;padding:5px;">';
+				echo '<img alt="" src="'.$rs["ImageInfo"].'" id="rsimg">';
 				$rsHtml ='<div class="rsbox">'
 						.'<span class="rsIntro">'.$results['relatedRecords'][0]["Label"].'</span><br/>'
 						;

@@ -380,6 +380,20 @@ class EBSCOAPI
         return $Info;
     }
 
+    public function getRelatedContentOptions($Info){
+        $return = '';
+        $returnArray = array();
+        if(isset($Info['relatedcontent'])){
+            foreach($Info['relatedcontent'] as $rc){
+                if($rc['DefaultOn'] == 'y'){
+                    $returnArray[] = $rc['Type'];
+                }
+            }
+        }
+        $return = implode(',', $returnArray);
+        return $return;
+    }
+
     public function getAutoSuggestState($Info){
         $return = 'n';
         if(isset($Info['AvailableDidYouMeanOptions'])){

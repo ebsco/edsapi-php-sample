@@ -17,8 +17,8 @@
 	$Info = $api->getInfo();
 	$autoSuggest = $api->getAutoSuggestState($Info);
 	$autoCorrect = $api->getAutoCorrectState($Info);
-	$imageQuickView = $api->getImageQuickViewState($info);
-
+	$imageQuickView = $api->getImageQuickViewState($Info);
+	$relatedContent = $api->getRelatedContentOptions($Info);
 	//only for testing
 	$autoSuggest = 'y';
 	$autoCorrect = 'y';
@@ -140,6 +140,9 @@
 				// Specifies whether or not to include highlighting in the search results
 				'highlight'      => 'y',
 				'expander'       => $expander,
+				//related content
+				// rs = Research Starter; emp = Exact Match Placard
+				'relatedcontent' => $relatedContent,
 				//autosuggest 
 				'autosuggest' => $autoSuggest,
 				//autocorrect
@@ -148,17 +151,8 @@
 				'includeimagequickview' => $imageQuickView
 			);
 			
-
-			
 			$params = array_merge($params, $query);
 			$params = http_build_query($params);
-			
-			//check for Research Starters active
-			if (isset($Info["relatedcontent"])) {
-				if ($Info["relatedcontent"][0]["Type"]=="rs" && $Info["relatedcontent"][0]["DefaultOn"]=="y" ) {
-					$params.="&action=includerelatedcontent(rs)";
-				}
-			}
 
 		$results = $api->apiSearch($params);
 		
