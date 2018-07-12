@@ -20,10 +20,7 @@
 	$imageQuickView = $api->getImageQuickViewState($Info);
 	$relatedContent = $api->getRelatedContentOptions($Info);
 	$publicationId = isset($_REQUEST['publicationid'])?$_REQUEST['publicationid']:'';
-	//only for testing
-	$autoSuggest = 'y';
-	$autoCorrect = 'y';
-	$imageQuickView = 'y';
+
 
 
 	//when clicking on the "original term" for an autocorrected query, we must be able to override the info method
