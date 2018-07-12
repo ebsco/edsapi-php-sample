@@ -213,12 +213,47 @@ class EBSCOResponse
 
 					
 					$relatedRecords[] = array(
+                        'Type' => 'rs',
 						'Label' => (string)$relRecs->Label,
 						'records' => $records
-					);
+					    );
 					
 				}
-			}
+            }
+        }
+
+        if(isset($this->response->SearchResult->RelatedContent->RelatedPublications)){
+            foreach($this->response->SearchResult->RelatedContent->RelatedPublications->children('http://epnet.com/webservices/EbscoApi/Publication/Contracts')->RelatedPublication as $publication){
+              $tmpResult = array();
+              $tmpResult['Label'] = (string)$publication->Label;
+              foreach($publication->PublicationRecords->Record as $pubRec){
+                $tmpRecord = array();
+                $tmpRecord['PublicationId'] = (string)$pubRec->Header->PublicationId;
+                $tmpRecord['IsSearchable'] = (string)$pubRec->Header->IsSearchable;
+                $tmpRecord['PLink'] = (string)$pubRec->PLink;
+                foreach($pubRec->Items->Item as $item){
+                  if($item->Label == 'Title'){
+                    $tmpRecord['Title'] = (string)$item->Data;
+                  }
+                  elseif($item->Label == 'ISSN'){
+                    $tmpRecord['ISSN'] = (string)$item->Data;
+                  }
+                }
+                foreach ($pubRec->FullTextHoldings->FullTextHolding as $ft) {
+                  $tmpFTH['URL'] = (string)$ft->URL;
+                  $tmpFTH['Name'] = (string)$ft->Name;
+                  $tmpRecord['FullText'][] = $tmpFTH;
+                }
+                $tmpResult['Record'][] = $tmpRecord;
+              }
+
+                $relatedRecords[] = array(
+                    'Type' => 'emp',
+                    'Label' => $tmpResult['Label'],
+                    'records' => $tmpResult['Record']
+                    );
+            }
+          
         }
 
         if($this->response->SearchResult->AutoSuggestedTerms){

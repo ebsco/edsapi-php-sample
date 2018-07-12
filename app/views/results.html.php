@@ -6,6 +6,13 @@ if(isset($results['autoCorrect']) && !empty($results['autoCorrect'])){
     $searchTerm = $results['autoCorrect'][0];
 }
 
+if(isset($_REQUEST['insidejournal']) && !empty($_REQUEST['insidejournal'])){
+    $insidejournal = 'within: <i>'.base64_decode($_REQUEST['insidejournal']).'</i>';
+}
+else{
+    $insidejournal = '';
+}
+
 // URL used by facets links
 $refineParams = array(
     'refine' => 'y',
@@ -291,7 +298,7 @@ $encodedHighLigtTerm = http_build_query(array('highlight'=>$searchTerm));
     <div class="statistics">
         Showing <strong><?php if($results['recordCount']>0){ echo ($start - 1) * $limit + 1;} else { echo 0; } ?>  - <?php if((($start - 1) * $limit + $limit)>=$results['recordCount']){ echo $results['recordCount']; } else { echo ($start - 1) * $limit + $limit;} ?></strong>  
             of <strong><?php echo $results['recordCount']; ?></strong>
-            for "<strong><?php echo $searchTerm; ?></strong>"
+            for "<strong><?php echo $searchTerm; ?></strong>" <?php echo $insidejournal;?>
     </div><br>            
     <div class ="topbar-resultList">
         <div class="optionsControls">
@@ -391,48 +398,36 @@ $encodedHighLigtTerm = http_build_query(array('highlight'=>$searchTerm));
 		<div class="pagination"><?php echo paginate($results['recordCount'], $limit, $start, $encodedSearchTerm, $fieldCode); ?></div>
 	</div>
 	 
-	<!-- begin research starters -->
+	<!-- begin research starters & Exact Match Placard -->
 
 
 		<?php
             // check if the research starters are returned
-			if (isset($results['relatedRecords'][0]["records"][0])) {
-				$rs=$results['relatedRecords'][0]["records"][0]; // only the first RS
-				echo '<img alt="" src="'.$rs["ImageInfo"].'" id="rsimg">';
-				$rsHtml ='<div class="rsbox">'
-						.'<span class="rsIntro">'.$results['relatedRecords'][0]["Label"].'</span><br/>'
-						;
-				foreach($rs["Items"] as $item) {
-					if ($item["Group"]=="Au") {continue;}
-					if ($item["Group"]=="Su") {continue;}
-					if ($item["Group"]=="Src") {continue;}
-					switch ($item["Label"]) {
-						case "Title":
-							$rsHtml.='<span class="rstitle">'.$item["Data"].'</span><br/>';
-							break;						
-						case "Abstract":
-							$l="researchstarter.php?db=".$rs['DbId']."&an=".$rs['An']."&".$encodedHighLigtTerm."&".$encodedSearchTerm."&fieldcode=".$fieldCode;                         
-                            $rsHtml.='<span>'.$item["Data"].'(<a href="'.$l.'">more</a>)</span><br/>';
-							break;
-						default:
-							$rsHtml.='<span>'.$item["Data"].'</span><br/>';
-					}
-				}
-				
-				foreach($rs["Items"] as $item) {
-					switch ($item["Group"]) {			
-						case "Src":
-							$rsHtml.='<span class="rsSource">'.$item["Data"].'</span><br/>';
-							break;
-					}
-				}	
-			
-				$rsHtml.='<span style="clear:both"/>';
-				$rsHtml.='</div><br/>';
-						;
-				echo $rsHtml;
-				//var_dump($results['relatedRecords'][0]["records"]);
-			}		
+
+            if(isset($results['relatedRecords'])){
+                $rsCount = 0;
+                $empCount = 0;
+                $rsData = '';
+                $empData = '';
+                foreach($results['relatedRecords'] as $relRec){
+                    if($relRec['Type'] == 'rs' && $rsCount == 0){
+                        $rsData = $relRec;
+                        $rsCount++;
+                    }
+                    elseif($relRec['Type'] == 'emp' && $empCount == 0){
+                        $empData = $relRec;
+                        $empCount++;
+                    }
+                }
+                if(!empty($rsData)){
+                    buildResearchStarterPlacard($rsData, $empCount);
+                }
+                if(!empty($empData)){
+                    buildExactMatchPlacard($empData, $rsCount);
+                }
+                
+
+            }	
 		?>
 
 	<!-- end research starters -->
@@ -723,3 +718,95 @@ $encodedHighLigtTerm = http_build_query(array('highlight'=>$searchTerm));
 </div>      
 </div>
 
+<?php
+
+function buildResearchStarterPlacard($relRec, $count){
+    $rs = $relRec['records'][0];
+        
+        $rsHtml ='<div class="related-content bluebg" id="related-content">';
+        if(isset($rs["ImageInfo"]) && !empty($rs["ImageInfo"])){
+            $rsHtml .= '<img alt="" src="'.$rs["ImageInfo"].'" id="rsimg">';
+        } 
+        $rsHtml .='<span class="rsIntro">'.$relRec['Label'].': </span>';
+
+        foreach($rs["Items"] as $item) {
+            if ($item["Group"]=="Au") {continue;}
+            if ($item["Group"]=="Su") {continue;}
+            if ($item["Group"]=="Src") {continue;}
+            switch ($item["Label"]) {
+                case "Title":
+                    $rsHtml.='<span class="rstitle">'.$item["Data"].'</span><br/>';
+                    break;						
+                case "Abstract":
+                    $l="researchstarter.php?db=".$rs['DbId']."&an=".$rs['An']."&".$encodedHighLigtTerm."&".$encodedSearchTerm."&fieldcode=".$fieldCode;                         
+                    $rsHtml.='<span>';
+                    if(strlen($item["Data"]) > 275) {
+                        $rsHtml .= mb_substr(str_replace('...','',$item["Data"]),0,275).'&hellip;&nbsp;(<a href="'.$l.'">more</a>)';
+                    }
+                    else {
+                        $rsHtml .= $item["Data"].'(<a href="'.$l.'">more</a>)';
+                    }
+                    $rsHtml .= '</span><br/>';
+                    break;
+                default:
+                    $rsHtml.='<span>'.$item["Data"].'</span><br/>';
+            }
+        }
+        
+        foreach($rs["Items"] as $item) {
+            switch ($item["Group"]) {			
+                case "Src":
+                    $rsHtml.='<span class="rsSource">'.$item["Data"].'</span><br/>';
+                    break;
+            }
+        }	
+        if($count > 0){
+            $rsHtml.='<div id="showEMP"><a href="javascript:showEMP();">We also found an exact Publication Match, click here to see it!</a></div>';
+        }
+        $rsHtml.='<span style="clear:both"/>';
+        $rsHtml.='</div>';
+        echo $rsHtml;
+}
+
+function buildExactMatchPlacard($relRec, $count){
+    if($count > 0){
+        $hideempplacard = 'style="display:none"';
+    }
+    $empHtml = '<div id="emp_placard" class="emp_placard yellowbg" '.$hideempplacard.'>';
+    $empHtml .= '<div class="emp_label">'.$relRec['Label'].'</div>';
+    foreach($relRec['records'] as $rec){
+        $empHtml .= '<div class="emp_title"><a href="'.$rec['PLink'].'" target="_blank">'.$rec['Title'].'</a></div>';
+
+        if($rec['IsSearchable'] == 'y'){
+            $empHtml .= '<div class="emp_sb">';
+            $empHtml .= '<form action="results.php" method="get">';
+            $empHtml .= '<input type="hidden" name="search" value="y">';
+            $empHtml .= '<input type="hidden" name="type" value="keyword">';
+            $empHtml .= '<input type="hidden" name="publicationid" value="'.$rec['PublicationId'].'">';
+            $empHtml .= '<input type="text" name="query" size="40" placeholder="Search Inside this Journal" id="pubinsidesearch">';
+            $empHtml .= '<input type="hidden" name="insidejournal" value="'.base64_encode($rec['Title']).'">';
+            $empHtml .= '<button type="submit" id="pubinsidebutton">Go</button>';
+            $empHtml .= '</form>';
+            $empHtml .= '</div>';
+        }
+
+        if(count($rec['FullText']) > 0){
+            $empHtml .= '<div class="emp_ft_target">';
+            $empHtml .= '<div id="emp_show_ft_list"><a href="javascript:showEmpFtList();">[+]Show Full Text Access Options</a></div>';
+            $empHtml .= '<div id="emp_hide_ft_list" style="display:none"><a href="javascript:hideEmpFtList();">[-]Hide Full Text Access Options</a></div>';
+            $empHtml .= '<ul id="emp_ft_list" style="display:none">';
+            foreach($rec['FullText'] as $fullTxt){
+                $empHtml .= '<li><a href="'.$fullTxt['URL'].'" target="_blank">'.$fullTxt['Name'].'</a></li>';
+            }
+            $empHtml .= '</ul>';
+            $empHtml .= '</div>';
+        }
+    }
+    if($count > 0){
+        $empHtml.='<div id="showRS"><a href="javascript:showRS();">We also found a Research Starter, click here to see it!</a></div>';
+    }
+  $empHtml .= '</div>';
+  echo $empHtml;
+}
+
+?>

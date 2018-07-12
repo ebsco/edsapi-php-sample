@@ -6,6 +6,7 @@
         <link rel="stylesheet" href="web/styles.css" type="text/css" media="screen" />
         <link rel="stylesheet" href="web/pubtype-icons.css" />
         <link rel="shortcut icon" href="web/favicon.ico" />
+        <script type="text/javascript" src="web/placard.js" ></script>
         <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js" ></script>
         <?php
         // if autocomplete is desired call in jQueryUI.js & jQueryUI.css

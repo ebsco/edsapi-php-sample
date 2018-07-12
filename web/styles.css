@@ -662,19 +662,17 @@ ul.filters {
 }
 
 .rsbox {
-	border : 1px solid black;
-	padding:5px;
+	border : 1px solid #bbb;;
+    padding: 1em;
 	font-size: 12px;
-	line-height: 130%;
-	display:block;
 }
 .rsIntro { 
-	font-size:13px;
+	font-size:1.1em;
 	font-weight:bold;
 }
 
 .rstitle {
-	font-size:15px;
+	font-size:1.1em;
 	font-weight:bold;
 }
 
@@ -687,7 +685,53 @@ ul.filters {
 #rsimg{
     float: left;
     padding: 5px;
+    margin: 5px;
     max-height: 90px;
+}
+
+.related-content, .emp_placard {
+    width: 95%;
+    padding: 10px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 1em;
+    margin-top: 1em;
+}
+.bluebg{
+    background-color: rgba(228,246,248,0.75);
+}
+
+.yellowbg{
+    background-color: rgba(255,232,102,0.5);
+}
+
+.related-content-title, .emp_label{
+    font-size: 1.1em;
+    font-weight: bold;
+    margin-bottom: 0.25em;
+}
+
+.emp_title, .emp_sb{
+    margin-left: 1.1em;
+}
+
+.emp_ft_target{
+    margin-left: 1.5em;
+    font-size: 0.8em;
+}
+
+#emp_ft_list{
+    font-size: 1em;
+}
+
+.emp_title{
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+#showEMP, #showRS{
+    padding: 0.75em;
+    text-align: right;
 }
 
 .iqvitem{
@@ -711,4 +755,9 @@ ul.filters {
 
 #lookfor{
     width: 350px;
+}
+
+#pubinsidesearch, #pubinsidebutton{
+    font-size: 0.8em;
+    padding: 0.5em;
 }

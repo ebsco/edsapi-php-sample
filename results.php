@@ -19,6 +19,7 @@
 	$autoCorrect = $api->getAutoCorrectState($Info);
 	$imageQuickView = $api->getImageQuickViewState($Info);
 	$relatedContent = $api->getRelatedContentOptions($Info);
+	$publicationId = isset($_REQUEST['publicationid'])?$_REQUEST['publicationid']:'';
 	//only for testing
 	$autoSuggest = 'y';
 	$autoCorrect = 'y';
@@ -148,7 +149,9 @@
 				//autocorrect
 				'autocorrect' => $autoCorrect,
 				//Image Quick View
-				'includeimagequickview' => $imageQuickView
+				'includeimagequickview' => $imageQuickView,
+				//publication ID
+				'publicationid' => $publicationId
 			);
 			
 			$params = array_merge($params, $query);
