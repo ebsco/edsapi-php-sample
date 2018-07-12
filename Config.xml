@@ -15,7 +15,7 @@
     <EDSCredentials>     
 		<ClientUser>xxxxx</ClientUser>
 		<EDSUserID>xxxxx</EDSUserID>
-		<EDSPassword>xxxx</EDSPassword>
+		<EDSPassword>xxxxxx</EDSPassword>
 		<EDSProfile>xxxxx</EDSProfile>           
     </EDSCredentials>
 	<ipaddresses>
@@ -23,4 +23,5 @@
 		<ip>192.168.1</ip>
 		<ip>192.168.2.1</ip>
 	</ipaddresses>
+    <autocomplete>y</autocomplete>
 </Config>
