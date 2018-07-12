@@ -17,10 +17,13 @@
 	$Info = $api->getInfo();
 	$autoSuggest = $api->getAutoSuggestState($Info);
 	$autoCorrect = $api->getAutoCorrectState($Info);
+	$imageQuickView = $api->getImageQuickViewState($info);
 
 	//only for testing
 	$autoSuggest = 'y';
 	$autoCorrect = 'y';
+	$imageQuickView = 'y';
+
 
 	//when clicking on the "original term" for an autocorrected query, we must be able to override the info method
 	if (isset($_REQUEST['autocorrect']) && $_REQUEST['autocorrect'] == 'n'){
@@ -140,7 +143,9 @@
 				//autosuggest 
 				'autosuggest' => $autoSuggest,
 				//autocorrect
-				'autocorrect' => $autoCorrect
+				'autocorrect' => $autoCorrect,
+				//Image Quick View
+				'includeimagequickview' => $imageQuickView
 			);
 			
 

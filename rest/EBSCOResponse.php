@@ -218,7 +218,7 @@ class EBSCOResponse
 				}
 			}
         }
-        
+
         if($this->response->SearchResult->AutoSuggestedTerms){
             foreach($this->response->SearchResult->AutoSuggestedTerms->AutoSuggestedTerm as $term){
                 $autoSuggestedSearch[] = (string)$term;
@@ -474,6 +474,17 @@ private function buildRecords()
             }
             }
 
+            if($record->ImageQuickViewItems){
+                foreach($record->ImageQuickViewItems->ImageQuickViewItem as $iqv){
+                    $result['ImageQuickView'][] = array(
+                        'DbId' => (string)$iqv->DbId,
+                        'An' => (string)$iqv->An,
+                        'Type' => (string)$iqv->Type,
+                        'Url' => (string)$iqv->Url
+                    );
+                }
+            }
+
             $results[] = $result;
         }
 
@@ -603,13 +614,24 @@ private function buildRecords()
             );
         }
 
+        //ImageQuickView 
+        $IncludeImageQuickView = array();
+        foreach ($this->response->ViewResultSettings->IncludeImageQuickView as $element) {
+            $IncludeImageQuickView[] = array(
+                'Label'  => (string) $element->Label,
+                'Id' => (string) $element->Id,
+                'DefaultOn'     => (string) $element->DefaultOn
+            );
+        }
+
         $result = array(
             'sort'      => $sort,
             'search'    => $search,
             'expanders' => $expanders,
             'limiters'  => $limiters,
             'relatedcontent'  => $relatedcontent,
-            'AvailableDidYouMeanOptions' => $AvailableDidYouMeanOptions
+            'AvailableDidYouMeanOptions' => $AvailableDidYouMeanOptions,
+            'IncludeImageQuickView' => $IncludeImageQuickView
         );
 
         return $result;

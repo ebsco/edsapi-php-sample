@@ -684,6 +684,11 @@ ul.filters {
 	margin-top:10px;
 }
 
+.iqvitem{
+    margin: 5px;
+    border: 2px solid #bbb;
+}
+
 .autocorrectsuggest{
     font-size: 80%;
     margin: 1em;

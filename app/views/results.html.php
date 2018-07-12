@@ -649,6 +649,22 @@ $encodedHighLigtTerm = http_build_query(array('highlight'=>$searchTerm));
                             </span>
                         </div>
                       <?php } ?>
+                      <?php 
+                      // support for Image Quick View
+                      // these represent small icons of tables, figures, graphcs used in articles
+                      // to do: hyperlink and provide an appropriate preview mode
+                      if(isset($result['ImageQuickView'])){
+                      ?>
+                        <div class="imagequickview">
+                        <?php
+                            foreach($result['ImageQuickView'] as $iqv){
+                                echo '<img src="'.$iqv['Url'].'" class="iqvitem">';
+                            }
+                        ?>
+                        </div>
+                      <?php
+                      }
+                      ?>
                       <div class="links">
                         <?php 
 						if($result['HTML']==1){
