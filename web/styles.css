@@ -684,6 +684,15 @@ ul.filters {
 	margin-top:10px;
 }
 
+.autocorrectsuggest{
+    font-size: 80%;
+    margin: 1em;
+}
+
+.autocorrectedoriginal{
+    margin-top: 0.5em;
+}
+
 .exportLink{
     font-size: 0.85em;
     margin-top: 1.5em;

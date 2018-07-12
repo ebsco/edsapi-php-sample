@@ -15,6 +15,17 @@
 	$expander = isset($_REQUEST['expander'])? $_REQUEST['expander']:'';
 	$debug = isset($_REQUEST['debug'])? $_REQUEST['debug']:'';
 	$Info = $api->getInfo();
+	$autoSuggest = $api->getAutoSuggestState($Info);
+	$autoCorrect = $api->getAutoCorrectState($Info);
+
+	//only for testing
+	$autoSuggest = 'y';
+	$autoCorrect = 'y';
+
+	//when clicking on the "original term" for an autocorrected query, we must be able to override the info method
+	if (isset($_REQUEST['autocorrect']) && $_REQUEST['autocorrect'] == 'n'){
+		$autoCorrect = 'n';
+	}
 
 	// If user come back from the detailed record 
 	// The same search will not call API again
@@ -125,7 +136,11 @@
 				'pagenumber'     => $start,
 				// Specifies whether or not to include highlighting in the search results
 				'highlight'      => 'y',
-				'expander'       => $expander
+				'expander'       => $expander,
+				//autosuggest 
+				'autosuggest' => $autoSuggest,
+				//autocorrect
+				'autocorrect' => $autoCorrect
 			);
 			
 

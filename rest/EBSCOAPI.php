@@ -379,5 +379,29 @@ class EBSCOAPI
         ); 
         return $Info;
     }
+
+    public function getAutoSuggestState($Info){
+        $return = 'n';
+        if(isset($Info['AvailableDidYouMeanOptions'])){
+            foreach($Info['AvailableDidYouMeanOptions'] as $dym){
+                if($dym['Id'] == 'AutoSuggest' && $dym['DefaultOn'] == 'y'){
+                    $return = 'y';
+                }
+            }
+        }
+        return $return;
+    }
+
+    public function getAutoCorrectState($Info){
+        $return = 'n';
+        if(isset($Info['AvailableDidYouMeanOptions'])){
+            foreach($Info['AvailableDidYouMeanOptions'] as $dym){
+                if($dym['Id'] == 'AutoCorrect' && $dym['DefaultOn'] == 'y'){
+                    $return = 'y';
+                }
+            }
+        }
+        return $return;
+    }
 }
 ?>

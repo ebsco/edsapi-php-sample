@@ -120,6 +120,8 @@ class EBSCOResponse
         $appliedLimiters = array();
         $appliedExpanders = array();
         $relatedRecords = array();
+        $autoCorrectedSearch = array();
+        $autoSuggestedSearch = array();
         
         if($this->response->SearchRequestGet->SearchCriteriaWithActions->QueriesWithAction){
         $queriesWithAction = $this->response->SearchRequestGet->SearchCriteriaWithActions->QueriesWithAction->QueryWithAction;
@@ -217,6 +219,18 @@ class EBSCOResponse
 			}
         }
         
+        if($this->response->SearchResult->AutoSuggestedTerms){
+            foreach($this->response->SearchResult->AutoSuggestedTerms->AutoSuggestedTerm as $term){
+                $autoSuggestedSearch[] = (string)$term;
+            } 
+        }
+
+        if($this->response->SearchResult->AutoCorrectedTerms){
+            foreach($this->response->SearchResult->AutoCorrectedTerms->AutoCorrectedTerm as $term){
+                $autoCorrectedSearch[] = (string)$term;
+            } 
+        }
+        
         if ($hits > 0) {
             $records = $this->buildRecords();
             $facets = $this->buildFacets();
@@ -230,6 +244,8 @@ class EBSCOResponse
             'appliedLimiters'=>$appliedLimiters,
             'appliedExpanders'=>$appliedExpanders,
             'relatedRecords'=>$relatedRecords,
+            'autoSuggest' => $autoSuggestedSearch,
+            'autoCorrect' => $autoCorrectedSearch,
             'records'     => $records,
             'facets'      => $facets
         );
@@ -577,12 +593,23 @@ private function buildRecords()
             );
         }
 
+        //AvailableDidYouMean (AutoSuggest & AutoCorrect)
+        $AvailableDidYouMeanOptions = array();
+        foreach ($this->response->AvailableSearchCriteria->AvailableDidYouMeanOptions->AvailableDidYouMeanOption as $element) {
+            $AvailableDidYouMeanOptions[] = array(
+                'Label'  => (string) $element->Label,
+                'Id' => (string) $element->Id,
+                'DefaultOn'     => (string) $element->DefaultOn
+            );
+        }
+
         $result = array(
             'sort'      => $sort,
             'search'    => $search,
             'expanders' => $expanders,
             'limiters'  => $limiters,
-            'relatedcontent'  => $relatedcontent
+            'relatedcontent'  => $relatedcontent,
+            'AvailableDidYouMeanOptions' => $AvailableDidYouMeanOptions
         );
 
         return $result;

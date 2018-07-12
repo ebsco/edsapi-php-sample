@@ -1,5 +1,11 @@
 <?php 
 $queryStringUrl = $results['queryString'];
+
+//change search term for refinement of autocorrected searches
+if(isset($results['autoCorrect']) && !empty($results['autoCorrect'])){
+    $searchTerm = $results['autoCorrect'][0];
+}
+
 // URL used by facets links
 $refineParams = array(
     'refine' => 'y',
@@ -38,6 +44,64 @@ $encodedHighLigtTerm = http_build_query(array('highlight'=>$searchTerm));
         <input type="submit" value="Search" />
         
     </p>
+    <?php
+    //support autoCorrected Search and AutoSuggest
+    if(isset($results['autoCorrect']) && !empty($results['autoCorrect'])){
+        ?>
+        <div class="autocorrectsuggest">
+            <div class="autocorrectedterm">We automatically corrected your search to:
+                <?php
+                foreach($results['autoCorrect'] as $suggestion) {
+                    $query = $_REQUEST;
+                    $query['query'] = (string)$suggestion;
+                    $query['autocorrect'] = 'n';
+                    $newQuery = http_build_query($query);
+                    echo '<a href="?'.$newQuery.'">'.$suggestion.'</a>';
+                    if(count($results['autoCorrect']) > 1 && $ac < count($results['autoCorrected'])){
+                      echo '; ';
+                    }
+                    $ac++;
+                  }
+                ?>
+            </div>
+            <div class="autocorrectedoriginal">Search for your original quer instead:
+                <?php
+                foreach($results['autoSuggest'] as $suggestion){
+                    $query = $_REQUEST;
+                    $query['query'] = (string)$suggestion;
+                    $query['autocorrect'] = 'n';
+                    $newQuery = http_build_query($query);
+                    echo '<a href="?'.$newQuery.'">'.$suggestion.'</a>';
+                    if(count($results['autoSuggest']) > 1 && $as < count($results['autoSuggest'])){
+                    echo '; ';
+                    }
+                    $as++;
+                }
+                ?>
+            </div> 
+        </div>
+        <?php
+    }
+    elseif(isset($results['autoSuggest']) && !empty($results['autoSuggest'])){?>
+        <div class="autocorrectsuggest">
+            <div class="autosuggestedterms">Did you mean:
+                <?php
+                foreach($results['autoSuggest'] as $suggestion){
+                    $query = $_REQUEST;
+                    $query['query'] = (string)$suggestion;
+                    $newQuery = http_build_query($query);
+                    echo '<a href="?'.$newQuery.'">'.$suggestion.'</a>';
+                    if(count($results['autoSuggest']) > 1 && $as < count($results['autoSuggest'])){
+                    echo '; ';
+                    }
+                    $as++;
+                }
+                ?>
+            </div> 
+        </div>
+    <?php
+    }
+    ?>
     </form>
     </div>
 <div class="table">
