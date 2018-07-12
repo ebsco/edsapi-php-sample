@@ -53,7 +53,12 @@
 							  </li>
 						  </ul>
                  <?php } 
-
+					// if not guest show export link
+                    if(isset($_SESSION['login'])||isset($login)){
+                        echo '<ul class="table-cell-box"><li>';
+                        echo '<a href="export.php?format=ris&an='.$result['An'].'&db='.$result['DbId'].'" target="_blank">RIS Export</a>';
+                        echo '</li></ul>';
+                    }
 					if(!empty($result['PDF'])||$result['HTML']==1){?>
                      <ul class="table-cell-box">
 						<label>Full Text:</label><hr/>

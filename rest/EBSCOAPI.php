@@ -317,6 +317,29 @@ class EBSCOAPI
         return $result;
     }
 
+    /**
+     * Wrapper for RIS Export
+     *
+     * @param string $an        The accession number
+     * @param string $db        The short database name
+     *
+     * @throws object             PEAR Error
+     * @return array              An associative array of data
+     * @access public
+     */
+    public function apiExport($an, $db)
+    {
+        // Add the HTTP query params
+        $params = array(
+            'an'        => $an,
+            'dbid'      => $db,
+            'format'    => 'ris'
+        );
+        $params = http_build_query($params);
+        $result = $this->request('Export', $params);
+        
+        return $result;
+    }
 
     /**
      * Wrapper for info API call

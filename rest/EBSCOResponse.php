@@ -60,6 +60,8 @@ class EBSCOResponse
                 return $this->buildRetrieve();
             } else if(!empty($this->response->AvailableSearchCriteria)) {
                 return $this->buildInfo();
+            } else if(!empty($this->response->Format) && $this->response->Format == 'RIS'){
+                return $this->response->Data;
             }
         }
     }

@@ -236,6 +236,23 @@ BODY;
     }
 
 
+   /**
+     * Request export of a specific record
+     *
+     * @param array $params Retrieve specific parameters
+     * @param array $headers Authentication and session tokens
+     *
+     * @return  array    An associative array of data
+     * @access public
+     */
+    public function requestExport($params, $headers)
+    {
+        $url = self::$end_point . '/ExportFormat';
+
+        $response = $this->request($url, $params, $headers);
+        return $response;
+    }
+
     /**
      * Request the info data
      *

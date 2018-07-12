@@ -401,6 +401,13 @@ $encodedHighLigtTerm = http_build_query(array('highlight'=>$searchTerm));
                     <span class="pt-icon <?php echo $pubTypeClass?>"></span>
                     <?php } ?>
                     <div><?php echo $result['pubType'] ?></div>
+                    <?php
+                    if(isset($_SESSION['login'])||isset($login)){
+                        echo '<div class="exportLink">';
+                        echo '<a href="export.php?format=ris&an='.$result['An'].'&db='.$result['DbId'].'" target="_blank">RIS Export</a>';
+                        echo '</div>';
+                    }
+                    ?>
                 </div>     
                 <?php } ?>       
                 <div class="info table-cell">
