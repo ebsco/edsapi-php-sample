@@ -897,6 +897,18 @@ private function buildRecords()
             }
             }
 
+            if($record->IllustrationInfo) {
+                $result['IllustrationInfo'] = array();
+                foreach ($record->IllustrationInfo->Images->Image as $img) {             
+                    $size = $img->Size ? (string) $img->Size : '';
+                    $target = $img->Target ? (string) $img->Target : '';
+                    $result['IllustrationInfo'][] = array(                
+                        'Size' => $size,
+                        'Target' => $target
+                    );
+                }
+            }
+
         return $result;
     }
 

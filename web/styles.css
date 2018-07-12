@@ -761,3 +761,12 @@ ul.filters {
     font-size: 0.8em;
     padding: 0.5em;
 }
+
+.iqvfull{
+    padding: 1em;
+    margin: 2em;
+    background-color: #bbb;
+}
+.iqvfull>img{
+    max-width: 500px;
+}

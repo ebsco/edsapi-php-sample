@@ -653,7 +653,7 @@ $encodedHighLigtTerm = http_build_query(array('highlight'=>$searchTerm));
                         <div class="imagequickview">
                         <?php
                             foreach($result['ImageQuickView'] as $iqv){
-                                echo '<img src="'.$iqv['Url'].'" class="iqvitem">';
+                                echo '<a href="iqv.php?db='.$iqv['DbId'].'&an='.$iqv['An'].'"><img src="'.$iqv['Url'].'" class="iqvitem" alt="'.$iqv['Type'].'" title="'.$iqv['Type'].'"></a>';
                             }
                         ?>
                         </div>
