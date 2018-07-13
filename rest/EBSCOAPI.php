@@ -425,7 +425,7 @@ class EBSCOAPI
 
     public function getImageQuickViewState($Info){
         $return = 'n';
-        if(isset($Info['IncludeImageQuickView']) && $Info['IncludeImageQuickView']['DefaultOn'] == 'y'){
+        if(isset($Info['IncludeImageQuickView']) && $Info['IncludeImageQuickView'][0]['DefaultOn'] == 'y'){
             $return = 'y';
         }
         return $return;
