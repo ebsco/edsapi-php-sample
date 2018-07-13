@@ -788,7 +788,7 @@ function buildExactMatchPlacard($relRec, $count){
             $empHtml .= '<input type="hidden" name="search" value="y">';
             $empHtml .= '<input type="hidden" name="type" value="keyword">';
             $empHtml .= '<input type="hidden" name="publicationid" value="'.$rec['PublicationId'].'">';
-            $empHtml .= '<input type="text" name="query" size="40" placeholder="Search Inside this Journal" id="pubinsidesearch">';
+            $empHtml .= '<input type="text" name="query" size="40" placeholder="Search Inside this Journal" id="pubinsidesearch" autocomplete="off">';
             $empHtml .= '<input type="hidden" name="insidejournal" value="'.base64_encode($rec['Title']).'">';
             $empHtml .= '<button type="submit" id="pubinsidebutton">Go</button>';
             $empHtml .= '</form>';
