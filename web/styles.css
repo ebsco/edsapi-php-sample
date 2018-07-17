@@ -234,8 +234,9 @@ div.searchHomeForm
 
 .table-row {
     border-bottom: 1px solid #EEEEEE;
-    margin-bottom: 10px;
+    /*margin-bottom: 10px;*/
     padding-bottom: 10px; 
+    padding-top: 10px;
   
 }
 
@@ -347,7 +348,7 @@ ul.filters {
     display: none;
 }
 
-.authors {
+.authors, .source {
     margin-bottom: 10px;
 }
 
@@ -629,13 +630,21 @@ ul.filters {
 
 .span-15 {
     width: 590px;
-     float: left;
+    float: left;
     margin-right: 10px;
 }
+
+.span-16{
+    width: 700px;
+    float: left;
+    margin-right: 10px;
+}
+
 .table-cell-box {
     border: 1px solid #cccccc;
     list-style-type: none;
     padding: 5px;
+    width: 120px;
 }
 .table-cell-box li {
     padding: 5px 0;
@@ -769,4 +778,25 @@ ul.filters {
 }
 .iqvfull>img{
     max-width: 500px;
+}
+
+#slider-range{
+    margin: 0.5em 1em 0.5em 0.5em;
+    width: 100px;
+}
+
+#minDate, #maxDate{
+    width: 40px;
+}
+#date-hypen{
+    width: 15px;
+    display: inline-block;
+}
+
+#bookjacketdetail{
+    max-width: 120px;
+}
+
+.customlinkimg{
+    max-width: 115px;
 }

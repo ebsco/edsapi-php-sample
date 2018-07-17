@@ -44,7 +44,18 @@
 	 ?>
     </h1>       
          <div>
-             <div class="table-cell floatleft">                 
+             <div class="table-cell floatleft"> 
+
+				<!-- book jacket -->
+				<?php 
+					if(!empty($result['ImageInfo'])) {
+						echo '<div class="table-cell-box">';
+						echo '<img id="bookjacketdetail" src="'.$result['ImageInfo']['medium'].'" />';
+						echo '</div>';
+					} 
+				?>
+
+
 				<?php 
 					if(!empty($result['PLink'])){?>
 						 <ul class="table-cell-box">
@@ -97,7 +108,7 @@
 							  <label>Custom Links:</label><hr/>
 								<?php foreach ($result['CustomLinks'] as $customLink) { ?>
 									<li>
-										<a  target="_blank" href="<?php echo $customLink['Url']; ?>" title="<?php echo $customLink['MouseOverText']; ?>"><img src="<?php echo $customLink['Icon']?>" /> <?php echo $customLink['Text']; ?></a>
+										<a  target="_blank" href="<?php echo $customLink['Url']; ?>" title="<?php echo $customLink['MouseOverText']; ?>"><img src="<?php echo $customLink['Icon']?>" class="customlinkimg" /> <?php echo $customLink['Text']; ?></a>
 									</li>
 								<?php } ?>
 						   </ul>
@@ -114,16 +125,8 @@
 						   </ul>
                       <?php } ?>                 
              </div>
-             <div style="margin-left: 20px" class="table-cell span-15">
-				<!-- book jacket -->
-				 <div class="jacket">
-					<?php 
-						if(!empty($result['ImageInfo'])) {              
-							echo '<img width="150px" height="200px" src="'.$result['ImageInfo']['medium'].'" />';
-						} 
-					?>
-				 </div>
-		 
+             <div style="margin-left: 20px" class="table-cell span-16">
+	 
               <table>                  
 				<?php 
 					if (!empty($result['Items'])) { 

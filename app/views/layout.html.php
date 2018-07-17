@@ -7,14 +7,12 @@
         <link rel="stylesheet" href="web/pubtype-icons.css" />
         <link rel="shortcut icon" href="web/favicon.ico" />
         <script type="text/javascript" src="web/placard.js" ></script>
+        <script type="text/javascript" src="web/daterange.js" ></script>
         <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js" ></script>
-        <?php
-        // if autocomplete is desired call in jQueryUI.js & jQueryUI.css
-        if(isset($_SESSION['autocomplete']) && $_SESSION['autocomplete'] == 'y'){
-            echo '<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>';
-            echo '<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">';
-        }
-        ?>     
+        
+        <!-- jQuery UI supports both autocomplete and date slider-->
+        <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+        <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">    
     </head>
 
     <body>

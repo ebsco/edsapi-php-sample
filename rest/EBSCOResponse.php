@@ -124,6 +124,7 @@ class EBSCOResponse
         $relatedRecords = array();
         $autoCorrectedSearch = array();
         $autoSuggestedSearch = array();
+        $dateRange = array();
         
         if($this->response->SearchRequestGet->SearchCriteriaWithActions->QueriesWithAction){
         $queriesWithAction = $this->response->SearchRequestGet->SearchCriteriaWithActions->QueriesWithAction->QueryWithAction;
@@ -267,6 +268,29 @@ class EBSCOResponse
                 $autoCorrectedSearch[] = (string)$term;
             } 
         }
+
+        if($this->response->SearchResult->AvailableCriteria){
+            foreach($this->response->SearchResult->AvailableCriteria as $key => $val){
+                foreach($val as $key => $val){
+                    if($key == 'DateRange'){
+                        $min = (string)$val->MinDate;
+                        $max = (string)$val->MaxDate;
+                        $currentYear = date("Y");
+                        //if min is lower than 1000 (same as EDS) set to that date
+                        if(substr($min,0,4) < (1000)){
+                            $min = "1000-01";
+                        }
+                        //if max is more than two years into the future set to two years in future
+                        if(substr($max,0,4) > ($currentYear+2)){
+                            $max = ($currentYear+2)."-12";
+                        }
+                        $dateRange['MinDate'] = $min;
+                        $dateRange['MaxDate'] = $max;
+                    }
+                }
+                
+            }
+        }
         
         if ($hits > 0) {
             $records = $this->buildRecords();
@@ -284,7 +308,8 @@ class EBSCOResponse
             'autoSuggest' => $autoSuggestedSearch,
             'autoCorrect' => $autoCorrectedSearch,
             'records'     => $records,
-            'facets'      => $facets
+            'facets'      => $facets,
+            'dateRange'   => $dateRange
         );
 
         return $results;

@@ -137,9 +137,14 @@ $encodedHighLigtTerm = http_build_query(array('highlight'=>$searchTerm));
         <?php if (!empty($results['appliedLimiters'])) { ?>    
         <?php foreach ($results['appliedLimiters'] as $filter) {
                   $limiterLabel = '';
+                  $filterAddOn = '';
                   foreach($Info['limiters'] as $limiter){
                       if($limiter['Id']==$filter['Id']){
                           $limiterLabel = $limiter['Label'];
+                          if($filter['Id'] == 'DT1'){
+                            $filterDate = explode('/',$filter['limiterValue']['value']);
+                            $filterAddOn = '['.substr($filterDate[0],0,4).'-'.substr($filterDate[1],0,4).']';
+                          }
                           break;
                       }
                   }
@@ -149,7 +154,7 @@ $encodedHighLigtTerm = http_build_query(array('highlight'=>$searchTerm));
         <a href="<?php echo $refineSearchUrl.'&'.$queryStringUrl.'&'.$action; ?>">                 
             <img  src="web/delete.png"/>                      
         </a>
-        <a href="<?php echo $refineSearchUrl.'&'.$queryStringUrl.'&'.$action; ?>">Limiter: <?php echo $limiterLabel; ?></a>
+        <a href="<?php echo $refineSearchUrl.'&'.$queryStringUrl.'&'.$action; ?>">Limiter: <?php echo $limiterLabel.' '.$filterAddOn; ?></a>
         </li>
         <?php } }?>        
 <!-- Applied expanders -->
@@ -206,6 +211,43 @@ $encodedHighLigtTerm = http_build_query(array('highlight'=>$searchTerm));
                     <input type="submit" value="Update" />
                     </form>               
                 </dl>              
+</div>
+<?php } ?>
+<?php if(!empty($results['dateRange'])){ ?>
+<div class="facet" style="font-size: 80%">
+    <dl class="facet-label">
+        <dt>Date Published</dt>
+    </dl>
+    <dl class="facet-label">
+        <dd>
+            <div id="slider-range"></div>
+            <div id="date-boxes">
+            <input type="text" name="minDate" id="minDate" value="<?php echo substr($results['dateRange']['MinDate'],0,4);?>" size="4"/><span id="date-hypen"><center>-</center></span><input type="text" name="maxDate" id="maxDate" value="<?php echo substr($results['dateRange']['MaxDate'],0,4);?>" size="4"/>
+            </div>
+            <form action="limiter.php" method="get" onsubmit="dateRangeSubmit(this)">
+            <input type="hidden" name="DT1" id="DT1" value="addlimiter(DT1:<?php echo $results['dateRange']['MinDate'];?>/<?php echo $results['dateRange']['MaxDate'];?>)" />
+            <input type="hidden" value="<?php echo $searchTerm;?>" name="query" />
+            <input type="hidden" value="<?php echo $fieldCode;?>"  name="fieldcode" />
+            <input type="submit" value="Update" id="date-submit">
+            </form>            
+
+        </dd>
+        <script>
+            $(function() {
+                $("#slider-range").slider({
+                range: true,
+                min: <?php echo substr($results['dateRange']['MinDate'],0,4);?>,
+                max: <?php echo substr($results['dateRange']['MaxDate'],0,4);?>,
+                values: [ <?php echo substr($results['dateRange']['MinDate'],0,4);?>, <?php echo substr($results['dateRange']['MaxDate'],0,4);?> ],
+                slide: function( event, ui ) {
+                    $("#minDate").val(ui.values[0]);
+                    $("#maxDate").val(ui.values[1]);
+                    $("#DT1").val('addlimiter(DT1:'+ui.values[0]+'-01/'+ui.values[1]+'-12)');
+                }
+                });
+            } );
+            </script>
+    </dl>
 </div>
 <?php } ?>
 <div class="facet" style="font-size: 80%">
@@ -279,7 +321,6 @@ $encodedHighLigtTerm = http_build_query(array('highlight'=>$searchTerm));
         <?php } ?>
     </div>
 <?php } ?>
-
         </div>
 <div class="table-cell">
 <?php 
@@ -500,7 +541,7 @@ $encodedHighLigtTerm = http_build_query(array('highlight'=>$searchTerm));
 						if (!empty($result['Items']['Au'])) { ?>
 							<div class="authors">
 								<span>
-									<span style="font-style: italic;">By : </span>                                            
+									<span style="font-style: italic;">By: </span>                                            
 									<?php 
 									foreach($result['Items']['Au'] as $Author){ 
 										echo $Author['Data']; 
@@ -512,7 +553,7 @@ $encodedHighLigtTerm = http_build_query(array('highlight'=>$searchTerm));
 						} 
 						?>
 						
-                        <div class="authors">
+                        <div class="source">
                         <span style="font-style: italic; ">
 						<?php 
 							if(isset($result['RecordInfo']['BibRelationships']['IsPartOfRelationships']['Titles'])){
