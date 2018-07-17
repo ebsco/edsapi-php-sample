@@ -566,7 +566,7 @@ $encodedHighLigtTerm = http_build_query(array('highlight'=>$searchTerm));
 						
 						if(!empty($result['RecordInfo']['BibEntity']['Identifiers'])){
 							foreach($result['RecordInfo']['BibEntity']['Identifiers'] as $identifier){
-								$pieces = explode('-',$identifier['Type']); 
+                                $pieces = explode('-',$identifier['Type']); 
 								if(isset($pieces[1])){                                       
 								   echo strtoupper($pieces[0]).'-'.ucfirst( $pieces[1]);                                       
 								}
@@ -579,14 +579,16 @@ $encodedHighLigtTerm = http_build_query(array('highlight'=>$searchTerm));
 						
 						if(isset($result['RecordInfo']['BibRelationships']['IsPartOfRelationships']['Identifiers'])){
                             foreach($result['RecordInfo']['BibRelationships']['IsPartOfRelationships']['Identifiers'] as $identifier){
-								$pieces = explode('-',$identifier['Type']);
-								if(isset($pieces[1])){                                        
-									echo strtoupper( $pieces[0]).'-'.ucfirst( $pieces[1]);                                       
-								}
-								else{ 
-									echo strtoupper($pieces[0]);
-								}
-								echo ": ".$identifier['Value'].","; 
+                                if($identifier['Type'] != 'issn-locals'){
+                                    $pieces = explode('-',$identifier['Type']);
+                                    if(isset($pieces[1])){                                        
+                                        echo strtoupper( $pieces[0]).'-'.ucfirst( $pieces[1]);                                       
+                                    }
+                                    else{ 
+                                        echo strtoupper($pieces[0]);
+                                    }
+                                    echo ": ".$identifier['Value'].", "; 
+                                }
                             }  
                         }
 						
