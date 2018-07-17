@@ -542,10 +542,9 @@ $encodedHighLigtTerm = http_build_query(array('highlight'=>$searchTerm));
 							<div class="authors">
 								<span>
 									<span style="font-style: italic;">By: </span>                                            
-									<?php 
-									foreach($result['Items']['Au'] as $Author){ 
-										echo $Author['Data']; 
-									} 
+                                    <?php 
+                                    $number = 5;
+                                    handleResultListAuthors($result, $number)
 									?>
 								</span>                        
 							</div>                        
@@ -855,4 +854,65 @@ function buildExactMatchPlacard($relRec, $count){
   echo $empHtml;
 }
 
+
+//purpose of this functino is to avoid overly long list of customer names, usually caused by the institutional affiliation being shown
+//due to the specifics of the author field, a few tests are necessary to break this apart properly
+
+function handleResultListAuthors($result, $number = 5){
+    
+    //debug function for testing, to be removed before launch
+    if(isset($_GET['debug']) && $_GET['debug'] == 'y'){
+        foreach($result['Items']['Au'] as $Author){ 
+            echo $Author['Data'];
+        }
+        echo '<hr>';
+    }
+
+    $c = 1;
+    $authorList = [];
+    $dump = 0;
+
+    foreach($result['Items']['Au'] as $Author){
+        //first try a regular expression to find well formed occurences of <a href="...">...</a>
+        $regexp = "<a\shref=\"[^\"]*\">.*<\/a>";
+        preg_match_all("/$regexp/siU", $Author['Data'], $matches);
+        $countMatches = count($matches[0]);
+
+        //matchCount > 0 then let's use that array
+        if($countMatches > 0){
+            foreach($matches[0] as $author){
+                $authorList[] =  $author;
+            }
+        }
+        // if not test for occurence of a semicolon and explode from there
+        elseif(strpos($Author['Data'], ';') > -1){
+            $authors = explode(';', $Author['Data']);
+            foreach($authors as $author){
+                $authorList[] =  $author;
+            }
+        }
+        // if this fails, just use the data as is (e.g. for a single Author)
+        else{
+            $authorList[] = $Author['Data'];
+            $dump = 1;
+        }                               
+        
+    } 
+
+
+    $totalAuthors = count($authorList);
+    foreach($authorList as $list){
+        if($c <= $number){
+            echo $list;
+            if($c < $number){
+                echo '; ';
+            }
+            elseif($c == $number && $totalAuthors > $number && $dump == 0){
+                echo '; et&nbsp;al.';
+            }
+            $c++;
+        }
+    }
+    
+}
 ?>
