@@ -515,7 +515,7 @@ $encodedHighLigtTerm = http_build_query(array('highlight'=>$searchTerm));
                         
                         <?php 
 						if(!(isset($_SESSION['login']) ||(validAuthIP("Config.xml")==true)) &&$result['AccessLevel']==1){ ?>
-                            <p>This record from <b>[<?php echo $result['DbLabel'] ?>]</b> cannot be displayed to guests.<a href="login.php?path=results&<?php echo $encodedSearchTerm;?>&fieldcode=<?php echo $fieldCode; ?>">Login</a> for full access.</p>
+                            <p>This record from <b>[<?php echo $result['DbLabel'] ?>]</b> cannot be displayed to guests. <a href="login.php?path=results&<?php echo $encodedSearchTerm;?>&fieldcode=<?php echo $fieldCode; ?>">Login</a> for full access.</p>
                        <?php }
 					   else{  ?>
                         <div class="title">                     
