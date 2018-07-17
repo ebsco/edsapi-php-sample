@@ -71,7 +71,7 @@ $encodedHighLigtTerm = http_build_query(array('highlight'=>$searchTerm));
                   }
                 ?>
             </div>
-            <div class="autocorrectedoriginal">Search for your original quer instead:
+            <div class="autocorrectedoriginal">Search for your original query instead:
                 <?php
                 foreach($results['autoSuggest'] as $suggestion){
                     $query = $_REQUEST;
