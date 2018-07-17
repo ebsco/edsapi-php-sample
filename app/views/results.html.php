@@ -557,7 +557,7 @@ $encodedHighLigtTerm = http_build_query(array('highlight'=>$searchTerm));
 						<?php 
 							if(isset($result['RecordInfo']['BibRelationships']['IsPartOfRelationships']['Titles'])){
 								foreach($result['RecordInfo']['BibRelationships']['IsPartOfRelationships']['Titles'] as $title){ 
-									echo $title['TitleFull'].",";                                  
+									echo $title['TitleFull'];                                  
 								}
 							}
 						?>
@@ -568,12 +568,12 @@ $encodedHighLigtTerm = http_build_query(array('highlight'=>$searchTerm));
 							foreach($result['RecordInfo']['BibEntity']['Identifiers'] as $identifier){
                                 $pieces = explode('-',$identifier['Type']); 
 								if(isset($pieces[1])){                                       
-								   echo strtoupper($pieces[0]).'-'.ucfirst( $pieces[1]);                                       
+								   echo ", ".strtoupper($pieces[0]).'-'.ucfirst( $pieces[1]);                                       
 								}
 								else{ 
-								   echo strtoupper($pieces[0]);
+								   echo ", ".strtoupper($pieces[0]);
 								}
-								echo ":".$identifier['Value'].",";                                                                
+								echo ":".$identifier['Value'];                                                                
 							}
 						} 
 						
@@ -582,10 +582,10 @@ $encodedHighLigtTerm = http_build_query(array('highlight'=>$searchTerm));
                                 if($identifier['Type'] != 'issn-locals'){
                                     $pieces = explode('-',$identifier['Type']);
                                     if(isset($pieces[1])){                                        
-                                        echo strtoupper( $pieces[0]).'-'.ucfirst( $pieces[1]);                                       
+                                        echo ", ".strtoupper( $pieces[0]).'-'.ucfirst( $pieces[1]);                                       
                                     }
                                     else{ 
-                                        echo strtoupper($pieces[0]);
+                                        echo ", ".strtoupper($pieces[0]);
                                     }
                                     echo ": ".$identifier['Value'].", "; 
                                 }
@@ -595,7 +595,7 @@ $encodedHighLigtTerm = http_build_query(array('highlight'=>$searchTerm));
 						if(isset($result['RecordInfo']['BibRelationships']['IsPartOfRelationships']['date'])){
 							foreach($result['RecordInfo']['BibRelationships']['IsPartOfRelationships']['date'] as $date){ 
 								if ($date["Type"]=='published') {
-									echo "Published: ".$date['M']."/".$date['D']."/".$date['Y'].",";
+									echo "Published: ".$date['M']."/".$date['D']."/".$date['Y'];
 								}
 							}
 						}
@@ -603,21 +603,23 @@ $encodedHighLigtTerm = http_build_query(array('highlight'=>$searchTerm));
 						if(isset($result['RecordInfo']['BibRelationships']['IsPartOfRelationships']['numbering'])){ 
 							foreach($result['RecordInfo']['BibRelationships']['IsPartOfRelationships']['numbering'] as $number){
 								$type = str_replace('volume','Vol',$number['Type']); $type = str_replace('issue','Issue',$type); 
-								echo $type.": ".$number['Value'].","; 
+								echo ", ".$type.": ".$number['Value']; 
 							} 
 						} 
 							
 						if(!empty($result['RecordInfo']['BibEntity']['PhysicalDescription']['StartPage'])){
-							 echo 'Start Page: '.$result['RecordInfo']['BibEntity']['PhysicalDescription']['StartPage'].','; 
+							 echo ', Start Page: '.$result['RecordInfo']['BibEntity']['PhysicalDescription']['StartPage']; 
 						} 
 							
 						if(!empty($result['RecordInfo']['BibEntity']['PhysicalDescription']['Pagination'])){ 
-                            echo 'Page Count: '.$result['RecordInfo']['BibEntity']['PhysicalDescription']['Pagination'].","; 
+                            echo ', Page Count: '.$result['RecordInfo']['BibEntity']['PhysicalDescription']['Pagination']; 
                         } 
 						
 						if(!empty($result['RecordInfo']['BibEntity']['Languages'])){ 
 							foreach($result['RecordInfo']['BibEntity']['Languages'] as $language){ 
-							 echo "Language: ".$language['Text'];
+                             if($language['Text'] != 'unknown'){
+                                echo ", Language: ".$language['Text'];
+                             }
 							} 
 						}
 						?>
