@@ -651,7 +651,7 @@ $encodedHighLigtTerm = http_build_query(array('highlight'=>$searchTerm));
 										else
 										{
 											$data = str_replace(array('<span class="highlight">','</span>'), array('',''), $Abstract['Data']);
-											$data = substr($data, 0, $length).'...';
+											$data = mb_substr($data, 0, $length).'...';
 											echo $data;
 										}
 									} 
