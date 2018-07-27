@@ -697,7 +697,7 @@ $encodedHighLigtTerm = http_build_query(array('highlight'=>$searchTerm));
                         <div class="imagequickview">
                         <?php
                             foreach($result['ImageQuickView'] as $iqv){
-                                if(isset($_SESSION['login'])||isset($login)){
+                                if(isset($_SESSION['login'])||isset($login)||validAuthIP('Config.xml')){
                                     echo '<a href="iqv.php?db='.$iqv['DbId'].'&an='.$iqv['An'].'"><img src="'.$iqv['Url'].'" class="iqvitem" alt="'.$iqv['Type'].'" title="'.$iqv['Type'].'"></a>';
                                 }
                                 else{
