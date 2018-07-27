@@ -224,7 +224,7 @@ class EBSCOAPI
      */
     public function getSessionToken($authenToken, $guest='n'){
         $token = ''; 
-		$configFile="config.xml";
+		$configFile="Config.xml";
 
         // Check user's login status
         if(isset($_SESSION['login']) or (validAuthIP($configFile)==true)){    
