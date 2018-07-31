@@ -234,8 +234,9 @@ div.searchHomeForm
 
 .table-row {
     border-bottom: 1px solid #EEEEEE;
-    margin-bottom: 10px;
+    /*margin-bottom: 10px;*/
     padding-bottom: 10px; 
+    padding-top: 10px;
   
 }
 
@@ -347,7 +348,7 @@ ul.filters {
     display: none;
 }
 
-.authors {
+.authors, .source {
     margin-bottom: 10px;
 }
 
@@ -629,13 +630,21 @@ ul.filters {
 
 .span-15 {
     width: 590px;
-     float: left;
+    float: left;
     margin-right: 10px;
 }
+
+.span-16{
+    width: 700px;
+    float: left;
+    margin-right: 10px;
+}
+
 .table-cell-box {
     border: 1px solid #cccccc;
     list-style-type: none;
     padding: 5px;
+    width: 120px;
 }
 .table-cell-box li {
     padding: 5px 0;
@@ -662,19 +671,17 @@ ul.filters {
 }
 
 .rsbox {
-	border : 1px solid black;
-	padding:5px;
+	border : 1px solid #bbb;;
+    padding: 1em;
 	font-size: 12px;
-	line-height: 130%;
-	display:block;
 }
 .rsIntro { 
-	font-size:13px;
+	font-size:1.1em;
 	font-weight:bold;
 }
 
 .rstitle {
-	font-size:15px;
+	font-size:1.1em;
 	font-weight:bold;
 }
 
@@ -682,4 +689,114 @@ ul.filters {
 	font-size:12px;
 	font-style:italic;
 	margin-top:10px;
+}
+
+#rsimg{
+    float: left;
+    padding: 5px;
+    margin: 5px;
+    max-height: 90px;
+}
+
+.related-content, .emp_placard {
+    width: 95%;
+    padding: 10px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 1em;
+    margin-top: 1em;
+}
+.bluebg{
+    background-color: rgba(228,246,248,0.75);
+}
+
+.yellowbg{
+    background-color: rgba(255,232,102,0.5);
+}
+
+.related-content-title, .emp_label{
+    font-size: 1.1em;
+    font-weight: bold;
+    margin-bottom: 0.25em;
+}
+
+.emp_title, .emp_sb{
+    margin-left: 1.1em;
+}
+
+.emp_ft_target{
+    margin-left: 1.5em;
+    font-size: 0.8em;
+}
+
+#emp_ft_list{
+    font-size: 1em;
+}
+
+.emp_title{
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+#showEMP, #showRS{
+    padding: 0.75em;
+    text-align: right;
+}
+
+.iqvitem{
+    margin: 5px;
+    border: 2px solid #bbb;
+}
+
+.autocorrectsuggest{
+    font-size: 80%;
+    margin: 1em;
+}
+
+.autocorrectedoriginal{
+    margin-top: 0.5em;
+}
+
+.exportLink{
+    font-size: 0.85em;
+    margin-top: 1.5em;
+}
+
+#lookfor{
+    width: 350px;
+}
+
+#pubinsidesearch, #pubinsidebutton{
+    font-size: 0.8em;
+    padding: 0.5em;
+}
+
+.iqvfull{
+    padding: 1em;
+    margin: 2em;
+    background-color: #bbb;
+}
+.iqvfull>img{
+    max-width: 500px;
+}
+
+#slider-range{
+    margin: 0.5em 1em 0.5em 0.5em;
+    width: 100px;
+}
+
+#minDate, #maxDate{
+    width: 40px;
+}
+#date-hypen{
+    width: 15px;
+    display: inline-block;
+}
+
+#bookjacketdetail{
+    max-width: 120px;
+}
+
+.customlinkimg{
+    max-width: 115px;
 }

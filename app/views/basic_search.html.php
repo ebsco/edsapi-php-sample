@@ -7,9 +7,9 @@ $Info = $api->getInfo();
 <div class="searchHomeForm">
     <div class="searchform">
 <h1>Basic Search</h1>
-<form action="results.php">
+<form action="results.php" id="searchform">
     <p>
-        <input type="text" name="query" style="width: 350px;" id="lookfor" /> 
+        <input type="text" name="query" id="lookfor" /> 
         <input type="hidden" name="expander" value="fulltext" />            
         <input type="submit" value="Search" />
     </p>

@@ -178,20 +178,25 @@ class EBSCOAPI
             $_SESSION["authenticationToken"]= $result['authenticationToken'];
             $_SESSION["authenticationTimeout"]= $result['authenticationTimeout'];
             $_SESSION["authenticationTimeStamp"]= $result['authenticationTimeStamp'];
+            $_SESSION['autocompleteToken'] = $result['autocompleteToken'];
+            $_SESSION['autocompleteUrl'] = $result['autocompleteUrl'];
+            $_SESSION['autocompleteCustId'] = $result['autocompleteCustId'];
 		}
 
         if(time()-$timestamp >= $timeout){
-                $result = $this->apiAuthenticationToken();
-                $_SESSION["authenticationToken"]= $result['authenticationToken'];
-                $_SESSION["authenticationTimeout"]= $result['authenticationTimeout'];
-                $_SESSION["authenticationTimeStamp"]= $result['authenticationTimeStamp'];
+            $result = $this->apiAuthenticationToken();
+            $_SESSION["authenticationToken"]= $result['authenticationToken'];
+            $_SESSION["authenticationTimeout"]= $result['authenticationTimeout'];
+            $_SESSION["authenticationTimeStamp"]= $result['authenticationTimeStamp'];
+            $_SESSION['autocompleteToken'] = $result['autocompleteToken'];
+            $_SESSION['autocompleteUrl'] = $result['autocompleteUrl'];
+            $_SESSION['autocompleteCustId'] = $result['autocompleteCustId'];
 
-                return $result['authenticationToken'];
-			}
-		else
-			{
-                return $this->authToken;
-            }
+            return $result['authenticationToken'];
+		}
+		else{
+            return $this->authToken;
+        }
       
 	}
     
@@ -219,7 +224,7 @@ class EBSCOAPI
      */
     public function getSessionToken($authenToken, $guest='n'){
         $token = ''; 
-		$configFile="config.xml";
+		$configFile="Config.xml";
 
         // Check user's login status
         if(isset($_SESSION['login']) or (validAuthIP($configFile)==true)){    
@@ -317,6 +322,29 @@ class EBSCOAPI
         return $result;
     }
 
+    /**
+     * Wrapper for RIS Export
+     *
+     * @param string $an        The accession number
+     * @param string $db        The short database name
+     *
+     * @throws object             PEAR Error
+     * @return array              An associative array of data
+     * @access public
+     */
+    public function apiExport($an, $db)
+    {
+        // Add the HTTP query params
+        $params = array(
+            'an'        => $an,
+            'dbid'      => $db,
+            'format'    => 'ris'
+        );
+        $params = http_build_query($params);
+        $result = $this->request('Export', $params);
+        
+        return $result;
+    }
 
     /**
      * Wrapper for info API call
@@ -355,6 +383,52 @@ class EBSCOAPI
             'timestamp'=>time()
         ); 
         return $Info;
+    }
+
+    public function getRelatedContentOptions($Info){
+        $return = '';
+        $returnArray = array();
+        if(isset($Info['relatedcontent'])){
+            foreach($Info['relatedcontent'] as $rc){
+                if($rc['DefaultOn'] == 'y'){
+                    $returnArray[] = $rc['Type'];
+                }
+            }
+        }
+        $return = implode(',', $returnArray);
+        return $return;
+    }
+
+    public function getAutoSuggestState($Info){
+        $return = 'n';
+        if(isset($Info['AvailableDidYouMeanOptions'])){
+            foreach($Info['AvailableDidYouMeanOptions'] as $dym){
+                if($dym['Id'] == 'AutoSuggest' && $dym['DefaultOn'] == 'y'){
+                    $return = 'y';
+                }
+            }
+        }
+        return $return;
+    }
+
+    public function getAutoCorrectState($Info){
+        $return = 'n';
+        if(isset($Info['AvailableDidYouMeanOptions'])){
+            foreach($Info['AvailableDidYouMeanOptions'] as $dym){
+                if($dym['Id'] == 'AutoCorrect' && $dym['DefaultOn'] == 'y'){
+                    $return = 'y';
+                }
+            }
+        }
+        return $return;
+    }
+
+    public function getImageQuickViewState($Info){
+        $return = 'n';
+        if(isset($Info['IncludeImageQuickView']) && $Info['IncludeImageQuickView'][0]['DefaultOn'] == 'y'){
+            $return = 'y';
+        }
+        return $return;
     }
 }
 ?>

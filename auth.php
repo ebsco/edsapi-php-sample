@@ -101,6 +101,7 @@
     }
 	else
 	{
+		
 		foreach($dom->EDSCredentials->User as $user){
 			$userType = (string)$user->ClientUser;
 			$userId = (string)$user->ClientUser;
@@ -108,7 +109,8 @@
 		}
                 
         $api = new EBSCOAPI();
-        $newSessionToken = $api->apiSessionToken($api->getAuthToken(), 'n');          
+		$newSessionToken = $api->apiSessionToken($api->getAuthToken(), 'n'); 
+		var_dump($newSessionToken);         
         $_SESSION['sessionToken']=$newSessionToken;
         
         $_SESSION['login']=0;       

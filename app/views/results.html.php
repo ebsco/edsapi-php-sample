@@ -1,5 +1,18 @@
 <?php 
 $queryStringUrl = $results['queryString'];
+
+//change search term for refinement of autocorrected searches
+if(isset($results['autoCorrect']) && !empty($results['autoCorrect'])){
+    $searchTerm = $results['autoCorrect'][0];
+}
+
+if(isset($_REQUEST['insidejournal']) && !empty($_REQUEST['insidejournal'])){
+    $insidejournal = 'within: <i>'.base64_decode($_REQUEST['insidejournal']).'</i>';
+}
+else{
+    $insidejournal = '';
+}
+
 // URL used by facets links
 $refineParams = array(
     'refine' => 'y',
@@ -13,9 +26,9 @@ $encodedHighLigtTerm = http_build_query(array('highlight'=>$searchTerm));
 ?>
 <div id="toptabcontent">
     <div class="topSearchBox">
-        <form action="results.php">
+        <form action="results.php" id="searchform">
     <p>
-        <input type="text" name="query" style="width: 350px;" id="lookfor" value="<?php echo $searchTerm ?>"/>  
+        <input type="text" name="query" id="lookfor" value="<?php echo $searchTerm ?>"/>  
         <input type="hidden" name="expander" value="fulltext" />
         <?php 
         $selected1 = '';
@@ -38,6 +51,64 @@ $encodedHighLigtTerm = http_build_query(array('highlight'=>$searchTerm));
         <input type="submit" value="Search" />
         
     </p>
+    <?php
+    //support autoCorrected Search and AutoSuggest
+    if(isset($results['autoCorrect']) && !empty($results['autoCorrect'])){
+        ?>
+        <div class="autocorrectsuggest">
+            <div class="autocorrectedterm">We automatically corrected your search to:
+                <?php
+                foreach($results['autoCorrect'] as $suggestion) {
+                    $query = $_REQUEST;
+                    $query['query'] = (string)$suggestion;
+                    $query['autocorrect'] = 'n';
+                    $newQuery = http_build_query($query);
+                    echo '<a href="?'.$newQuery.'">'.$suggestion.'</a>';
+                    if(count($results['autoCorrect']) > 1 && $ac < count($results['autoCorrected'])){
+                      echo '; ';
+                    }
+                    $ac++;
+                  }
+                ?>
+            </div>
+            <div class="autocorrectedoriginal">Search for your original query instead:
+                <?php
+                foreach($results['autoSuggest'] as $suggestion){
+                    $query = $_REQUEST;
+                    $query['query'] = (string)$suggestion;
+                    $query['autocorrect'] = 'n';
+                    $newQuery = http_build_query($query);
+                    echo '<a href="?'.$newQuery.'">'.$suggestion.'</a>';
+                    if(count($results['autoSuggest']) > 1 && $as < count($results['autoSuggest'])){
+                    echo '; ';
+                    }
+                    $as++;
+                }
+                ?>
+            </div> 
+        </div>
+        <?php
+    }
+    elseif(isset($results['autoSuggest']) && !empty($results['autoSuggest'])){?>
+        <div class="autocorrectsuggest">
+            <div class="autosuggestedterms">Did you mean:
+                <?php
+                foreach($results['autoSuggest'] as $suggestion){
+                    $query = $_REQUEST;
+                    $query['query'] = (string)$suggestion;
+                    $newQuery = http_build_query($query);
+                    echo '<a href="?'.$newQuery.'">'.$suggestion.'</a>';
+                    if(count($results['autoSuggest']) > 1 && $as < count($results['autoSuggest'])){
+                    echo '; ';
+                    }
+                    $as++;
+                }
+                ?>
+            </div> 
+        </div>
+    <?php
+    }
+    ?>
     </form>
     </div>
 <div class="table">
@@ -66,9 +137,14 @@ $encodedHighLigtTerm = http_build_query(array('highlight'=>$searchTerm));
         <?php if (!empty($results['appliedLimiters'])) { ?>    
         <?php foreach ($results['appliedLimiters'] as $filter) {
                   $limiterLabel = '';
+                  $filterAddOn = '';
                   foreach($Info['limiters'] as $limiter){
                       if($limiter['Id']==$filter['Id']){
                           $limiterLabel = $limiter['Label'];
+                          if($filter['Id'] == 'DT1'){
+                            $filterDate = explode('/',$filter['limiterValue']['value']);
+                            $filterAddOn = '['.substr($filterDate[0],0,4).'-'.substr($filterDate[1],0,4).']';
+                          }
                           break;
                       }
                   }
@@ -78,7 +154,7 @@ $encodedHighLigtTerm = http_build_query(array('highlight'=>$searchTerm));
         <a href="<?php echo $refineSearchUrl.'&'.$queryStringUrl.'&'.$action; ?>">                 
             <img  src="web/delete.png"/>                      
         </a>
-        <a href="<?php echo $refineSearchUrl.'&'.$queryStringUrl.'&'.$action; ?>">Limiter: <?php echo $limiterLabel; ?></a>
+        <a href="<?php echo $refineSearchUrl.'&'.$queryStringUrl.'&'.$action; ?>">Limiter: <?php echo $limiterLabel.' '.$filterAddOn; ?></a>
         </li>
         <?php } }?>        
 <!-- Applied expanders -->
@@ -135,6 +211,43 @@ $encodedHighLigtTerm = http_build_query(array('highlight'=>$searchTerm));
                     <input type="submit" value="Update" />
                     </form>               
                 </dl>              
+</div>
+<?php } ?>
+<?php if(!empty($results['dateRange'])){ ?>
+<div class="facet" style="font-size: 80%">
+    <dl class="facet-label">
+        <dt>Date Published</dt>
+    </dl>
+    <dl class="facet-label">
+        <dd>
+            <div id="slider-range"></div>
+            <div id="date-boxes">
+            <input type="text" name="minDate" id="minDate" value="<?php echo substr($results['dateRange']['MinDate'],0,4);?>" size="4"/><span id="date-hypen"><center>-</center></span><input type="text" name="maxDate" id="maxDate" value="<?php echo substr($results['dateRange']['MaxDate'],0,4);?>" size="4"/>
+            </div>
+            <form action="limiter.php" method="get" onsubmit="dateRangeSubmit(this)">
+            <input type="hidden" name="DT1" id="DT1" value="addlimiter(DT1:<?php echo $results['dateRange']['MinDate'];?>/<?php echo $results['dateRange']['MaxDate'];?>)" />
+            <input type="hidden" value="<?php echo $searchTerm;?>" name="query" />
+            <input type="hidden" value="<?php echo $fieldCode;?>"  name="fieldcode" />
+            <input type="submit" value="Update" id="date-submit">
+            </form>            
+
+        </dd>
+        <script>
+            $(function() {
+                $("#slider-range").slider({
+                range: true,
+                min: <?php echo substr($results['dateRange']['MinDate'],0,4);?>,
+                max: <?php echo substr($results['dateRange']['MaxDate'],0,4);?>,
+                values: [ <?php echo substr($results['dateRange']['MinDate'],0,4);?>, <?php echo substr($results['dateRange']['MaxDate'],0,4);?> ],
+                slide: function( event, ui ) {
+                    $("#minDate").val(ui.values[0]);
+                    $("#maxDate").val(ui.values[1]);
+                    $("#DT1").val('addlimiter(DT1:'+ui.values[0]+'-01/'+ui.values[1]+'-12)');
+                }
+                });
+            } );
+            </script>
+    </dl>
 </div>
 <?php } ?>
 <div class="facet" style="font-size: 80%">
@@ -208,7 +321,6 @@ $encodedHighLigtTerm = http_build_query(array('highlight'=>$searchTerm));
         <?php } ?>
     </div>
 <?php } ?>
-
         </div>
 <div class="table-cell">
 <?php 
@@ -227,7 +339,7 @@ $encodedHighLigtTerm = http_build_query(array('highlight'=>$searchTerm));
     <div class="statistics">
         Showing <strong><?php if($results['recordCount']>0){ echo ($start - 1) * $limit + 1;} else { echo 0; } ?>  - <?php if((($start - 1) * $limit + $limit)>=$results['recordCount']){ echo $results['recordCount']; } else { echo ($start - 1) * $limit + $limit;} ?></strong>  
             of <strong><?php echo $results['recordCount']; ?></strong>
-            for "<strong><?php echo $searchTerm; ?></strong>"
+            for "<strong><?php echo $searchTerm; ?></strong>" <?php echo $insidejournal;?>
     </div><br>            
     <div class ="topbar-resultList">
         <div class="optionsControls">
@@ -327,48 +439,36 @@ $encodedHighLigtTerm = http_build_query(array('highlight'=>$searchTerm));
 		<div class="pagination"><?php echo paginate($results['recordCount'], $limit, $start, $encodedSearchTerm, $fieldCode); ?></div>
 	</div>
 	 
-	<!-- begin research starters -->
+	<!-- begin research starters & Exact Match Placard -->
 
 
 		<?php
-			// check if the research starters are returned
-			if (isset($results['relatedRecords'][0]["records"][0])) {
-				$rs=$results['relatedRecords'][0]["records"][0]; // only the first RS
-				echo '<img alt="" src="'.$rs["ImageInfo"].'" style="float:left;padding:5px;">';
-				$rsHtml ='<div class="rsbox">'
-						.'<span class="rsIntro">'.$results['relatedRecords'][0]["Label"].'</span><br/>'
-						;
-				foreach($rs["Items"] as $item) {
-					if ($item["Group"]=="Au") {continue;}
-					if ($item["Group"]=="Su") {continue;}
-					if ($item["Group"]=="Src") {continue;}
-					switch ($item["Label"]) {
-						case "Title":
-							$rsHtml.='<span class="rstitle">'.$item["Data"].'</span><br/>';
-							break;						
-						case "Abstract":
-							$l="researchstarter.php?db=".$rs['DbId']."&an=".$rs['An']."&".$encodedHighLigtTerm."&".$encodedSearchTerm."&fieldcode=".$fieldCode;                         
-                            $rsHtml.='<span>'.$item["Data"].'(<a href="'.$l.'">more</a>)</span><br/>';
-							break;
-						default:
-							$rsHtml.='<span>'.$item["Data"].'</span><br/>';
-					}
-				}
-				
-				foreach($rs["Items"] as $item) {
-					switch ($item["Group"]) {			
-						case "Src":
-							$rsHtml.='<span class="rsSource">'.$item["Data"].'</span><br/>';
-							break;
-					}
-				}	
-			
-				$rsHtml.='<span style="clear:both"/>';
-				$rsHtml.='</div><br/>';
-						;
-				echo $rsHtml;
-				//var_dump($results['relatedRecords'][0]["records"]);
-			}		
+            // check if the research starters are returned
+
+            if(isset($results['relatedRecords'])){
+                $rsCount = 0;
+                $empCount = 0;
+                $rsData = '';
+                $empData = '';
+                foreach($results['relatedRecords'] as $relRec){
+                    if($relRec['Type'] == 'rs' && $rsCount == 0){
+                        $rsData = $relRec;
+                        $rsCount++;
+                    }
+                    elseif($relRec['Type'] == 'emp' && $empCount == 0){
+                        $empData = $relRec;
+                        $empCount++;
+                    }
+                }
+                if(!empty($rsData)){
+                    buildResearchStarterPlacard($rsData, $empCount);
+                }
+                if(!empty($empData)){
+                    buildExactMatchPlacard($empData, $rsCount);
+                }
+                
+
+            }	
 		?>
 
 	<!-- end research starters -->
@@ -401,6 +501,13 @@ $encodedHighLigtTerm = http_build_query(array('highlight'=>$searchTerm));
                     <span class="pt-icon <?php echo $pubTypeClass?>"></span>
                     <?php } ?>
                     <div><?php echo $result['pubType'] ?></div>
+                    <?php
+                    if(isset($_SESSION['login'])||isset($login)){
+                        echo '<div class="exportLink">';
+                        echo '<a href="export.php?format=ris&an='.$result['An'].'&db='.$result['DbId'].'" target="_blank">RIS Export</a>';
+                        echo '</div>';
+                    }
+                    ?>
                 </div>     
                 <?php } ?>       
                 <div class="info table-cell">
@@ -408,7 +515,7 @@ $encodedHighLigtTerm = http_build_query(array('highlight'=>$searchTerm));
                         
                         <?php 
 						if(!(isset($_SESSION['login']) ||(validAuthIP("Config.xml")==true)) &&$result['AccessLevel']==1){ ?>
-                            <p>This record from <b>[<?php echo $result['DbLabel'] ?>]</b> cannot be displayed to guests.<a href="login.php?path=results&<?php echo $encodedSearchTerm;?>&fieldcode=<?php echo $fieldCode; ?>">Login</a> for full access.</p>
+                            <p>This record from <b>[<?php echo $result['DbLabel'] ?>]</b> cannot be displayed to guests. <a href="login.php?path=results&<?php echo $encodedSearchTerm;?>&fieldcode=<?php echo $fieldCode; ?>">Login</a> for full access.</p>
                        <?php }
 					   else{  ?>
                         <div class="title">                     
@@ -434,11 +541,10 @@ $encodedHighLigtTerm = http_build_query(array('highlight'=>$searchTerm));
 						if (!empty($result['Items']['Au'])) { ?>
 							<div class="authors">
 								<span>
-									<span style="font-style: italic;">By : </span>                                            
-									<?php 
-									foreach($result['Items']['Au'] as $Author){ 
-										echo $Author['Data']; 
-									} 
+									<span style="font-style: italic;">By: </span>                                            
+                                    <?php 
+                                    $number = 5;
+                                    handleResultListAuthors($result, $number)
 									?>
 								</span>                        
 							</div>                        
@@ -446,12 +552,12 @@ $encodedHighLigtTerm = http_build_query(array('highlight'=>$searchTerm));
 						} 
 						?>
 						
-                        <div class="authors">
+                        <div class="source">
                         <span style="font-style: italic; ">
 						<?php 
 							if(isset($result['RecordInfo']['BibRelationships']['IsPartOfRelationships']['Titles'])){
 								foreach($result['RecordInfo']['BibRelationships']['IsPartOfRelationships']['Titles'] as $title){ 
-									echo $title['TitleFull'].",";                                  
+									echo $title['TitleFull'];                                  
 								}
 							}
 						?>
@@ -460,34 +566,36 @@ $encodedHighLigtTerm = http_build_query(array('highlight'=>$searchTerm));
 						
 						if(!empty($result['RecordInfo']['BibEntity']['Identifiers'])){
 							foreach($result['RecordInfo']['BibEntity']['Identifiers'] as $identifier){
-								$pieces = explode('-',$identifier['Type']); 
+                                $pieces = explode('-',$identifier['Type']); 
 								if(isset($pieces[1])){                                       
-								   echo strtoupper($pieces[0]).'-'.ucfirst( $pieces[1]);                                       
+								   echo ", ".strtoupper($pieces[0]).'-'.ucfirst( $pieces[1]);                                       
 								}
 								else{ 
-								   echo strtoupper($pieces[0]);
+								   echo ", ".strtoupper($pieces[0]);
 								}
-								echo ":".$identifier['Value'].",";                                                                
+								echo ":".$identifier['Value'];                                                                
 							}
 						} 
 						
 						if(isset($result['RecordInfo']['BibRelationships']['IsPartOfRelationships']['Identifiers'])){
                             foreach($result['RecordInfo']['BibRelationships']['IsPartOfRelationships']['Identifiers'] as $identifier){
-								$pieces = explode('-',$identifier['Type']);
-								if(isset($pieces[1])){                                        
-									echo strtoupper( $pieces[0]).'-'.ucfirst( $pieces[1]);                                       
-								}
-								else{ 
-									echo strtoupper($pieces[0]);
-								}
-								echo ": ".$identifier['Value'].","; 
+                                if($identifier['Type'] != 'issn-locals'){
+                                    $pieces = explode('-',$identifier['Type']);
+                                    if(isset($pieces[1])){                                        
+                                        echo ", ".strtoupper( $pieces[0]).'-'.ucfirst( $pieces[1]);                                       
+                                    }
+                                    else{ 
+                                        echo ", ".strtoupper($pieces[0]);
+                                    }
+                                    echo ": ".$identifier['Value'].", "; 
+                                }
                             }  
                         }
 						
 						if(isset($result['RecordInfo']['BibRelationships']['IsPartOfRelationships']['date'])){
 							foreach($result['RecordInfo']['BibRelationships']['IsPartOfRelationships']['date'] as $date){ 
 								if ($date["Type"]=='published') {
-									echo "Published: ".$date['M']."/".$date['D']."/".$date['Y'].",";
+									echo "Published: ".$date['M']."/".$date['D']."/".$date['Y'];
 								}
 							}
 						}
@@ -495,21 +603,23 @@ $encodedHighLigtTerm = http_build_query(array('highlight'=>$searchTerm));
 						if(isset($result['RecordInfo']['BibRelationships']['IsPartOfRelationships']['numbering'])){ 
 							foreach($result['RecordInfo']['BibRelationships']['IsPartOfRelationships']['numbering'] as $number){
 								$type = str_replace('volume','Vol',$number['Type']); $type = str_replace('issue','Issue',$type); 
-								echo $type.": ".$number['Value'].","; 
+								echo ", ".$type.": ".$number['Value']; 
 							} 
 						} 
 							
 						if(!empty($result['RecordInfo']['BibEntity']['PhysicalDescription']['StartPage'])){
-							 echo 'Start Page: '.$result['RecordInfo']['BibEntity']['PhysicalDescription']['StartPage'].','; 
+							 echo ', Start Page: '.$result['RecordInfo']['BibEntity']['PhysicalDescription']['StartPage']; 
 						} 
 							
 						if(!empty($result['RecordInfo']['BibEntity']['PhysicalDescription']['Pagination'])){ 
-                            echo 'Page Count: '.$result['RecordInfo']['BibEntity']['PhysicalDescription']['Pagination'].","; 
+                            echo ', Page Count: '.$result['RecordInfo']['BibEntity']['PhysicalDescription']['Pagination']; 
                         } 
 						
 						if(!empty($result['RecordInfo']['BibEntity']['Languages'])){ 
 							foreach($result['RecordInfo']['BibEntity']['Languages'] as $language){ 
-							 echo "Language: ".$language['Text'];
+                             if($language['Text'] != 'unknown'){
+                                echo ", Language: ".$language['Text'];
+                             }
 							} 
 						}
 						?>
@@ -545,7 +655,7 @@ $encodedHighLigtTerm = http_build_query(array('highlight'=>$searchTerm));
 										else
 										{
 											$data = str_replace(array('<span class="highlight">','</span>'), array('',''), $Abstract['Data']);
-											$data = substr($data, 0, $length).'...';
+											$data = mb_substr($data, 0, $length).'&hellip;';
 											echo $data;
 										}
 									} 
@@ -578,6 +688,27 @@ $encodedHighLigtTerm = http_build_query(array('highlight'=>$searchTerm));
                             </span>
                         </div>
                       <?php } ?>
+                      <?php 
+                      // support for Image Quick View
+                      // these represent small icons of tables, figures, graphcs used in articles
+                      // Note IQV will only show to authorized users with a link, all others only see thumbnail
+                      if(isset($result['ImageQuickView'])){
+                      ?>
+                        <div class="imagequickview">
+                        <?php
+                            foreach($result['ImageQuickView'] as $iqv){
+                                if(isset($_SESSION['login'])||isset($login)||validAuthIP('Config.xml')){
+                                    echo '<a href="iqv.php?db='.$iqv['DbId'].'&an='.$iqv['An'].'"><img src="'.$iqv['Url'].'" class="iqvitem" alt="'.$iqv['Type'].'" title="'.$iqv['Type'].'"></a>';
+                                }
+                                else{
+                                    echo '<img src="'.$iqv['Url'].'" class="iqvitem" alt="'.$iqv['Type'].'" title="'.$iqv['Type'].' / Please login for full access">';
+                                }                           
+                            }
+                        ?>
+                        </div>
+                      <?php
+                      }
+                      ?>
                       <div class="links">
                         <?php 
 						if($result['HTML']==1){
@@ -636,3 +767,156 @@ $encodedHighLigtTerm = http_build_query(array('highlight'=>$searchTerm));
 </div>      
 </div>
 
+<?php
+
+function buildResearchStarterPlacard($relRec, $count){
+    $rs = $relRec['records'][0];
+        
+        $rsHtml ='<div class="related-content bluebg" id="related-content">';
+        if(isset($rs["ImageInfo"]) && !empty($rs["ImageInfo"])){
+            $rsHtml .= '<img alt="" src="'.$rs["ImageInfo"].'" id="rsimg">';
+        } 
+        $rsHtml .='<span class="rsIntro">'.$relRec['Label'].': </span>';
+
+        foreach($rs["Items"] as $item) {
+            if ($item["Group"]=="Au") {continue;}
+            if ($item["Group"]=="Su") {continue;}
+            if ($item["Group"]=="Src") {continue;}
+            switch ($item["Label"]) {
+                case "Title":
+                    $rsHtml.='<span class="rstitle">'.$item["Data"].'</span><br/>';
+                    break;						
+                case "Abstract":
+                    $l="researchstarter.php?db=".$rs['DbId']."&an=".$rs['An']."&".$encodedHighLigtTerm."&".$encodedSearchTerm."&fieldcode=".$fieldCode;                         
+                    $rsHtml.='<span>';
+                    if(strlen($item["Data"]) > 275) {
+                        $rsHtml .= mb_substr(str_replace('...','',$item["Data"]),0,275).'&hellip;&nbsp;(<a href="'.$l.'">more</a>)';
+                    }
+                    else {
+                        $rsHtml .= $item["Data"].'(<a href="'.$l.'">more</a>)';
+                    }
+                    $rsHtml .= '</span><br/>';
+                    break;
+                default:
+                    $rsHtml.='<span>'.$item["Data"].'</span><br/>';
+            }
+        }
+        
+        foreach($rs["Items"] as $item) {
+            switch ($item["Group"]) {			
+                case "Src":
+                    $rsHtml.='<span class="rsSource">'.$item["Data"].'</span><br/>';
+                    break;
+            }
+        }	
+        if($count > 0){
+            $rsHtml.='<div id="showEMP"><a href="javascript:showEMP();">We also found an exact Publication Match, click here to see it!</a></div>';
+        }
+        $rsHtml.='<span style="clear:both"/>';
+        $rsHtml.='</div>';
+        echo $rsHtml;
+}
+
+function buildExactMatchPlacard($relRec, $count){
+    if($count > 0){
+        $hideempplacard = 'style="display:none"';
+    }
+    $empHtml = '<div id="emp_placard" class="emp_placard yellowbg" '.$hideempplacard.'>';
+    $empHtml .= '<div class="emp_label">'.$relRec['Label'].'</div>';
+    foreach($relRec['records'] as $rec){
+        $empHtml .= '<div class="emp_title"><a href="'.$rec['PLink'].'" target="_blank">'.$rec['Title'].'</a></div>';
+
+        if($rec['IsSearchable'] == 'y'){
+            $empHtml .= '<div class="emp_sb">';
+            $empHtml .= '<form action="results.php" method="get">';
+            $empHtml .= '<input type="hidden" name="search" value="y">';
+            $empHtml .= '<input type="hidden" name="type" value="keyword">';
+            $empHtml .= '<input type="hidden" name="publicationid" value="'.$rec['PublicationId'].'">';
+            $empHtml .= '<input type="text" name="query" size="40" placeholder="Search Inside this Journal" id="pubinsidesearch" autocomplete="off">';
+            $empHtml .= '<input type="hidden" name="insidejournal" value="'.base64_encode($rec['Title']).'">';
+            $empHtml .= '<button type="submit" id="pubinsidebutton">Go</button>';
+            $empHtml .= '</form>';
+            $empHtml .= '</div>';
+        }
+
+        if(count($rec['FullText']) > 0){
+            $empHtml .= '<div class="emp_ft_target">';
+            $empHtml .= '<div id="emp_show_ft_list"><a href="javascript:showEmpFtList();">[+]Show Full Text Access Options</a></div>';
+            $empHtml .= '<div id="emp_hide_ft_list" style="display:none"><a href="javascript:hideEmpFtList();">[-]Hide Full Text Access Options</a></div>';
+            $empHtml .= '<ul id="emp_ft_list" style="display:none">';
+            foreach($rec['FullText'] as $fullTxt){
+                $empHtml .= '<li><a href="'.$fullTxt['URL'].'" target="_blank">'.$fullTxt['Name'].'</a></li>';
+            }
+            $empHtml .= '</ul>';
+            $empHtml .= '</div>';
+        }
+    }
+    if($count > 0){
+        $empHtml.='<div id="showRS"><a href="javascript:showRS();">We also found a Research Starter, click here to see it!</a></div>';
+    }
+  $empHtml .= '</div>';
+  echo $empHtml;
+}
+
+
+//purpose of this functino is to avoid overly long list of customer names, usually caused by the institutional affiliation being shown
+//due to the specifics of the author field, a few tests are necessary to break this apart properly
+
+function handleResultListAuthors($result, $number = 5){
+    
+    //debug function for testing, to be removed before launch
+    if(isset($_GET['debug']) && $_GET['debug'] == 'y'){
+        foreach($result['Items']['Au'] as $Author){ 
+            echo $Author['Data'];
+        }
+        echo '<hr>';
+    }
+
+    $c = 1;
+    $authorList = [];
+    $dump = 0;
+
+    foreach($result['Items']['Au'] as $Author){
+        //first try a regular expression to find well formed occurences of <a href="...">...</a>
+        $regexp = "<a\shref=\"[^\"]*\">.*<\/a>";
+        preg_match_all("/$regexp/siU", $Author['Data'], $matches);
+        $countMatches = count($matches[0]);
+
+        //matchCount > 0 then let's use that array
+        if($countMatches > 0){
+            foreach($matches[0] as $author){
+                $authorList[] =  $author;
+            }
+        }
+        // if not test for occurence of a semicolon and explode from there
+        elseif(strpos($Author['Data'], ';') > -1){
+            $authors = explode(';', $Author['Data']);
+            foreach($authors as $author){
+                $authorList[] =  $author;
+            }
+        }
+        // if this fails, just use the data as is (e.g. for a single Author)
+        else{
+            $authorList[] = $Author['Data'];
+            $dump = 1;
+        }                               
+        
+    } 
+
+
+    $totalAuthors = count($authorList);
+    foreach($authorList as $list){
+        if($c <= $number){
+            echo $list;
+            if($c < $number){
+                echo '; ';
+            }
+            elseif($c == $number && $totalAuthors > $number && $dump == 0){
+                echo '; et&nbsp;al.';
+            }
+            $c++;
+        }
+    }
+    
+}
+?>

@@ -15,6 +15,18 @@
 	$expander = isset($_REQUEST['expander'])? $_REQUEST['expander']:'';
 	$debug = isset($_REQUEST['debug'])? $_REQUEST['debug']:'';
 	$Info = $api->getInfo();
+	$autoSuggest = $api->getAutoSuggestState($Info);
+	$autoCorrect = $api->getAutoCorrectState($Info);
+	$imageQuickView = $api->getImageQuickViewState($Info);
+	$relatedContent = $api->getRelatedContentOptions($Info);
+	$publicationId = isset($_REQUEST['publicationid'])?$_REQUEST['publicationid']:'';
+
+
+
+	//when clicking on the "original term" for an autocorrected query, we must be able to override the info method
+	if (isset($_REQUEST['autocorrect']) && $_REQUEST['autocorrect'] == 'n'){
+		$autoCorrect = 'n';
+	}
 
 	// If user come back from the detailed record 
 	// The same search will not call API again
@@ -125,20 +137,22 @@
 				'pagenumber'     => $start,
 				// Specifies whether or not to include highlighting in the search results
 				'highlight'      => 'y',
-				'expander'       => $expander
+				'expander'       => $expander,
+				//related content
+				// rs = Research Starter; emp = Exact Match Placard
+				'relatedcontent' => $relatedContent,
+				//autosuggest 
+				'autosuggest' => $autoSuggest,
+				//autocorrect
+				'autocorrect' => $autoCorrect,
+				//Image Quick View
+				'includeimagequickview' => $imageQuickView,
+				//publication ID
+				'publicationid' => $publicationId
 			);
-			
-
 			
 			$params = array_merge($params, $query);
 			$params = http_build_query($params);
-			
-			//check for Research Starters active
-			if (isset($Info["relatedcontent"])) {
-				if ($Info["relatedcontent"][0]["Type"]=="rs" && $Info["relatedcontent"][0]["DefaultOn"]=="y" ) {
-					$params.="&action=includerelatedcontent(rs)";
-				}
-			}
 
 		$results = $api->apiSearch($params);
 		

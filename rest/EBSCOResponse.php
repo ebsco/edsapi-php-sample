@@ -60,6 +60,8 @@ class EBSCOResponse
                 return $this->buildRetrieve();
             } else if(!empty($this->response->AvailableSearchCriteria)) {
                 return $this->buildInfo();
+            } else if(!empty($this->response->Format) && $this->response->Format == 'RIS'){
+                return $this->response->Data;
             }
         }
     }
@@ -77,11 +79,13 @@ class EBSCOResponse
      {
         $token = (string) $this->response->AuthToken;
         $timeout = (integer) $this->response->AuthTimeout;
-
         $result = array(
             'authenticationToken'   => $token,
             'authenticationTimeout' => $timeout,
-            'authenticationTimeStamp'=> time()
+            'authenticationTimeStamp'=> time(),
+            'autocompleteToken' => (string)$this->response->Autocomplete->Token,
+            'autocompleteUrl'=> (string)$this->response->Autocomplete->Url,
+            'autocompleteCustId'=> (string)$this->response->Autocomplete->CustId
         );
         return $result;
      }
@@ -118,6 +122,9 @@ class EBSCOResponse
         $appliedLimiters = array();
         $appliedExpanders = array();
         $relatedRecords = array();
+        $autoCorrectedSearch = array();
+        $autoSuggestedSearch = array();
+        $dateRange = array();
         
         if($this->response->SearchRequestGet->SearchCriteriaWithActions->QueriesWithAction){
         $queriesWithAction = $this->response->SearchRequestGet->SearchCriteriaWithActions->QueriesWithAction->QueryWithAction;
@@ -207,12 +214,82 @@ class EBSCOResponse
 
 					
 					$relatedRecords[] = array(
+                        'Type' => 'rs',
 						'Label' => (string)$relRecs->Label,
 						'records' => $records
-					);
+					    );
 					
 				}
-			}
+            }
+        }
+
+        if(isset($this->response->SearchResult->RelatedContent->RelatedPublications)){
+            foreach($this->response->SearchResult->RelatedContent->RelatedPublications->children('http://epnet.com/webservices/EbscoApi/Publication/Contracts')->RelatedPublication as $publication){
+              $tmpResult = array();
+              $tmpResult['Label'] = (string)$publication->Label;
+              foreach($publication->PublicationRecords->Record as $pubRec){
+                $tmpRecord = array();
+                $tmpRecord['PublicationId'] = (string)$pubRec->Header->PublicationId;
+                $tmpRecord['IsSearchable'] = (string)$pubRec->Header->IsSearchable;
+                $tmpRecord['PLink'] = (string)$pubRec->PLink;
+                foreach($pubRec->Items->Item as $item){
+                  if($item->Label == 'Title'){
+                    $tmpRecord['Title'] = (string)$item->Data;
+                  }
+                  elseif($item->Label == 'ISSN'){
+                    $tmpRecord['ISSN'] = (string)$item->Data;
+                  }
+                }
+                foreach ($pubRec->FullTextHoldings->FullTextHolding as $ft) {
+                  $tmpFTH['URL'] = (string)$ft->URL;
+                  $tmpFTH['Name'] = (string)$ft->Name;
+                  $tmpRecord['FullText'][] = $tmpFTH;
+                }
+                $tmpResult['Record'][] = $tmpRecord;
+              }
+
+                $relatedRecords[] = array(
+                    'Type' => 'emp',
+                    'Label' => $tmpResult['Label'],
+                    'records' => $tmpResult['Record']
+                    );
+            }
+          
+        }
+
+        if($this->response->SearchResult->AutoSuggestedTerms){
+            foreach($this->response->SearchResult->AutoSuggestedTerms->AutoSuggestedTerm as $term){
+                $autoSuggestedSearch[] = (string)$term;
+            } 
+        }
+
+        if($this->response->SearchResult->AutoCorrectedTerms){
+            foreach($this->response->SearchResult->AutoCorrectedTerms->AutoCorrectedTerm as $term){
+                $autoCorrectedSearch[] = (string)$term;
+            } 
+        }
+
+        if($this->response->SearchResult->AvailableCriteria){
+            foreach($this->response->SearchResult->AvailableCriteria as $key => $val){
+                foreach($val as $key => $val){
+                    if($key == 'DateRange'){
+                        $min = (string)$val->MinDate;
+                        $max = (string)$val->MaxDate;
+                        $currentYear = date("Y");
+                        //if min is lower than 1000 (same as EDS) set to that date
+                        if(substr($min,0,4) < (1000)){
+                            $min = "1000-01";
+                        }
+                        //if max is more than two years into the future set to two years in future
+                        if(substr($max,0,4) > ($currentYear+2)){
+                            $max = ($currentYear+2)."-12";
+                        }
+                        $dateRange['MinDate'] = $min;
+                        $dateRange['MaxDate'] = $max;
+                    }
+                }
+                
+            }
         }
         
         if ($hits > 0) {
@@ -228,8 +305,11 @@ class EBSCOResponse
             'appliedLimiters'=>$appliedLimiters,
             'appliedExpanders'=>$appliedExpanders,
             'relatedRecords'=>$relatedRecords,
+            'autoSuggest' => $autoSuggestedSearch,
+            'autoCorrect' => $autoCorrectedSearch,
             'records'     => $records,
-            'facets'      => $facets
+            'facets'      => $facets,
+            'dateRange'   => $dateRange
         );
 
         return $results;
@@ -456,6 +536,17 @@ private function buildRecords()
             }
             }
 
+            if($record->ImageQuickViewItems){
+                foreach($record->ImageQuickViewItems->ImageQuickViewItem as $iqv){
+                    $result['ImageQuickView'][] = array(
+                        'DbId' => (string)$iqv->DbId,
+                        'An' => (string)$iqv->An,
+                        'Type' => (string)$iqv->Type,
+                        'Url' => (string)$iqv->Url
+                    );
+                }
+            }
+
             $results[] = $result;
         }
 
@@ -575,12 +666,34 @@ private function buildRecords()
             );
         }
 
+        //AvailableDidYouMean (AutoSuggest & AutoCorrect)
+        $AvailableDidYouMeanOptions = array();
+        foreach ($this->response->AvailableSearchCriteria->AvailableDidYouMeanOptions->AvailableDidYouMeanOption as $element) {
+            $AvailableDidYouMeanOptions[] = array(
+                'Label'  => (string) $element->Label,
+                'Id' => (string) $element->Id,
+                'DefaultOn'     => (string) $element->DefaultOn
+            );
+        }
+
+        //ImageQuickView 
+        $IncludeImageQuickView = array();
+        foreach ($this->response->ViewResultSettings->IncludeImageQuickView as $element) {
+            $IncludeImageQuickView[] = array(
+                'Label'  => (string) $element->Label,
+                'Id' => (string) $element->Id,
+                'DefaultOn'     => (string) $element->DefaultOn
+            );
+        }
+
         $result = array(
             'sort'      => $sort,
             'search'    => $search,
             'expanders' => $expanders,
             'limiters'  => $limiters,
-            'relatedcontent'  => $relatedcontent
+            'relatedcontent'  => $relatedcontent,
+            'AvailableDidYouMeanOptions' => $AvailableDidYouMeanOptions,
+            'IncludeImageQuickView' => $IncludeImageQuickView
         );
 
         return $result;
@@ -807,6 +920,18 @@ private function buildRecords()
                    }
                }
             }
+            }
+
+            if($record->IllustrationInfo) {
+                $result['IllustrationInfo'] = array();
+                foreach ($record->IllustrationInfo->Images->Image as $img) {             
+                    $size = $img->Size ? (string) $img->Size : '';
+                    $target = $img->Target ? (string) $img->Target : '';
+                    $result['IllustrationInfo'][] = array(                
+                        'Size' => $size,
+                        'Target' => $target
+                    );
+                }
             }
 
         return $result;

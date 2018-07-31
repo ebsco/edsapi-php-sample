@@ -2,20 +2,12 @@
 	$results = $results = $_SESSION['results'];
 	$queryStringUrl = $results['queryString'];
 	$encodedQuery = http_build_query(array('query'=>$_REQUEST['query']));
-	$encodedHighLigtTerm = http_build_query(array('highlight'=>$_REQUEST['highlight']));
+    $encodedHighLigtTerm = http_build_query(array('highlight'=>$_REQUEST['highlight']));
 ?>
 <div id="toptabcontent">
     <div class ="topbar">
        <div style="padding-top: 6px; float: left" ><a style="color: #ffffff;margin-left: 15px;" href="results.php?<?php echo $encodedQuery;?>&fieldcode=<?php echo $_REQUEST['fieldcode'];?>&<?php echo $queryStringUrl; ?>&back=y"> << Back to Results</a></div>
-      <div style="float: right;margin: 7px 20px 0 0;color: white">
-          <?php if($_REQUEST['resultId']>1){  ?>
-           <a href="recordSwich.php?<?php echo $encodedQuery;?>&fieldcode=<?php echo $_REQUEST['fieldcode'];?>&resultId=<?php echo ($_REQUEST['resultId']-1)?>&<?php echo $queryStringUrl; ?>"><span class="results-paging-previous">&nbsp;&nbsp;&nbsp;&nbsp;</span></a>
-            <?php }
-            echo $_REQUEST['resultId'].' of '.$_REQUEST['recordCount'];
-			if($_REQUEST['resultId']<$_REQUEST['recordCount']){  ?>
-				<a href="recordSwich.php?<?php echo $encodedQuery;?>&fieldcode=<?php echo $_REQUEST['fieldcode'];?>&resultId=<?php echo ($_REQUEST['resultId']+1)?>&<?php echo $queryStringUrl; ?>"><span class="results-paging-next">&nbsp;&nbsp;&nbsp;&nbsp;</span></a>
-           <?php } ?>
-      </div>
+      <div style="float: right;margin: 7px 20px 0 0;color: white"></div>
     </div>
  <?php 
 	if($debug=='y'){
@@ -44,18 +36,7 @@
 	 ?>
     </h1>       
          <div>
-             <div class="table-cell floatleft"> 
-
-				<!-- book jacket -->
-				<?php 
-					if(!empty($result['ImageInfo'])) {
-						echo '<div class="table-cell-box">';
-						echo '<img id="bookjacketdetail" src="'.$result['ImageInfo']['medium'].'" />';
-						echo '</div>';
-					} 
-				?>
-
-
+             <div class="table-cell floatleft">                 
 				<?php 
 					if(!empty($result['PLink'])){?>
 						 <ul class="table-cell-box">
@@ -64,12 +45,6 @@
 							  </li>
 						  </ul>
                  <?php } 
-					// if not guest show export link
-                    if(isset($_SESSION['login'])||isset($login)){
-                        echo '<ul class="table-cell-box"><li>';
-                        echo '<a href="export.php?format=ris&an='.$result['An'].'&db='.$result['DbId'].'" target="_blank">RIS Export</a>';
-                        echo '</li></ul>';
-                    }
 					if(!empty($result['PDF'])||$result['HTML']==1){?>
                      <ul class="table-cell-box">
 						<label>Full Text:</label><hr/>
@@ -77,7 +52,7 @@
                      <?php 
 						if(!empty($result['PDF'])){?>
 						  <li>
-							  <a target="_blank" class="icon pdf fulltext" href="PDF.php?an=<?php echo $result['An']?>&db=<?php echo $result['DbId']?>">
+							  <a target="_blank" class="icon pdf fulltext" href="<?php echo $result['pdflink']?>">
 								PDF full text</a>
 						  </li>
                       <?php 
@@ -108,7 +83,7 @@
 							  <label>Custom Links:</label><hr/>
 								<?php foreach ($result['CustomLinks'] as $customLink) { ?>
 									<li>
-										<a  target="_blank" href="<?php echo $customLink['Url']; ?>" title="<?php echo $customLink['MouseOverText']; ?>"><img src="<?php echo $customLink['Icon']?>" class="customlinkimg" /> <?php echo $customLink['Text']; ?></a>
+										<a  target="_blank" href="<?php echo $customLink['Url']; ?>" title="<?php echo $customLink['MouseOverText']; ?>"><img src="<?php echo $customLink['Icon']?>" /> <?php echo $customLink['Text']; ?></a>
 									</li>
 								<?php } ?>
 						   </ul>
@@ -125,8 +100,28 @@
 						   </ul>
                       <?php } ?>                 
              </div>
-             <div style="margin-left: 20px" class="table-cell span-16">
-	 
+             <div style="margin-left: 20px" class="table-cell span-15">
+				<!-- book jacket -->
+				 <div class="jacket">
+					<?php 
+						if(!empty($result['ImageInfo'])) {              
+							echo '<img width="150px" height="200px" src="'.$result['ImageInfo']['medium'].'" />';
+						} 
+					?>
+				 </div>
+              <?php
+                if(isset($result['IllustrationInfo']) && !empty($result['IllustrationInfo'])){
+                    foreach($result['IllustrationInfo'] as $img){
+                        if($img['Size'] == 'full'){
+                            echo '<div class="iqvfull"><img src="'.$img['Target'].'"border="0" /><br/>';
+                        }
+                        if($img['Size'] == 'orig'){
+                            $imgLink = $img['Target'];
+                        }
+                    }
+                    echo '<a href="'.$imgLink.'" target="_blank">Open Full Size Image in new Window / Tab</a></div>';
+                }
+              ?>
               <table>                  
 				<?php 
 					if (!empty($result['Items'])) { 

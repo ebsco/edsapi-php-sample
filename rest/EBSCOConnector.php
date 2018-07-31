@@ -110,8 +110,7 @@ class EBSCOConnector
      *
      * @access public
      */
-    public function __construct()
-    {        
+    public function __construct(){        
 		$xml ="Config.xml";
 		$dom = simplexml_load_file($xml);
 		  
@@ -121,8 +120,15 @@ class EBSCOConnector
 		$EDSCredentials = $dom ->EDSCredentials;
 		$this->userId = (string)$EDSCredentials -> EDSUserID;
 		$this->password = (string)$EDSCredentials -> EDSPassword;
-		$this->interfaceId = (string)$EDSCredentials -> EDSProfile;
-		$this->orgId = '';
+        $this->interfaceId = (string)$EDSCredentials -> EDSProfile;
+        $_SESSION['autocomplete'] = (string)$dom->autocomplete;
+        $this->orgId = '';
+        if(isset($dom->EDSCredentials->IPAuth) && !empty($dom->EDSCredentials->IPAuth)){
+            $this->useIpAuthentication = (string)$dom->EDSCredentials->IPAuth;
+        }
+        else{
+            $this->useIpAuthentication = 'n';
+        }    
 	}
     
 
@@ -135,17 +141,26 @@ class EBSCOConnector
      * @return string   .The authentication token
      * @access public
      */
-    public function requestAuthenticationToken()
-    {
-        $url = self::$authentication_end_point.'/UIDAuth';
-        // Add the body of the request. Important.
-        $params =<<<BODY
-<UIDAuthRequestMessage xmlns="http://www.ebscohost.com/services/public/AuthService/Response/2012/06/01">
-    <UserId>{$this->userId}</UserId>
-    <Password>{$this->password}</Password>
-    <InterfaceId>{$this->interfaceId}</InterfaceId>
-</UIDAuthRequestMessage>
-BODY;
+    public function requestAuthenticationToken(){
+        if($this->useIpAuthentication == 'y'){
+            $url = self::$authentication_end_point . '/ipauth';
+            $params ="<IPAuthRequestMessage xmlns=\"http://www.ebscohost.com/services/public/AuthService/Response/2012/06/01\" xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\">
+                <Options>
+                    <Option>autocomplete</Option>
+                </Options>
+                </IPAuthRequestMessage>";
+        }
+        else{
+            $url = self::$authentication_end_point.'/UIDAuth';
+            $params ="<UIDAuthRequestMessage xmlns=\"http://www.ebscohost.com/services/public/AuthService/Response/2012/06/01\">
+                <UserId>{$this->userId}</UserId>
+                <Password>{$this->password}</Password>
+                <InterfaceId>{$this->interfaceId}</InterfaceId>
+                <Options>
+                    <Option>autocomplete</Option>
+                </Options>
+            </UIDAuthRequestMessage>";
+        }
 
 
         // Set the content type to 'application/xml'. Important, otherwise cURL will use the usual POST content type.
@@ -155,6 +170,7 @@ BODY;
         );
 
         $response = $this->request($url, $params, $headers, 'POST');
+
         return $response;
     }
 
@@ -235,6 +251,23 @@ BODY;
         return $response;
     }
 
+
+   /**
+     * Request export of a specific record
+     *
+     * @param array $params Retrieve specific parameters
+     * @param array $headers Authentication and session tokens
+     *
+     * @return  array    An associative array of data
+     * @access public
+     */
+    public function requestExport($params, $headers)
+    {
+        $url = self::$end_point . '/ExportFormat';
+
+        $response = $this->request($url, $params, $headers);
+        return $response;
+    }
 
     /**
      * Request the info data
