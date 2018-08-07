@@ -94,6 +94,7 @@ $encodedHighLigtTerm = http_build_query(array('highlight'=>$searchTerm));
             <div class="autosuggestedterms">Did you mean:
                 <?php
                 foreach($results['autoSuggest'] as $suggestion){
+                    $as = 0;
                     $query = $_REQUEST;
                     $query['query'] = (string)$suggestion;
                     $newQuery = http_build_query($query);
@@ -461,7 +462,7 @@ $encodedHighLigtTerm = http_build_query(array('highlight'=>$searchTerm));
                     }
                 }
                 if(!empty($rsData)){
-                    buildResearchStarterPlacard($rsData, $empCount);
+                    buildResearchStarterPlacard($rsData, $empCount, $fieldCode, $encodedHighLigtTerm, $encodedSearchTerm);
                 }
                 if(!empty($empData)){
                     buildExactMatchPlacard($empData, $rsCount);
@@ -769,7 +770,7 @@ $encodedHighLigtTerm = http_build_query(array('highlight'=>$searchTerm));
 
 <?php
 
-function buildResearchStarterPlacard($relRec, $count){
+function buildResearchStarterPlacard($relRec, $count, $fieldCode, $encodedHighLigtTerm, $encodedSearchTerm){
     $rs = $relRec['records'][0];
         
         $rsHtml ='<div class="related-content bluebg" id="related-content">';
@@ -820,6 +821,9 @@ function buildResearchStarterPlacard($relRec, $count){
 function buildExactMatchPlacard($relRec, $count){
     if($count > 0){
         $hideempplacard = 'style="display:none"';
+    }
+    else{
+        $hideempplacard = '';
     }
     $empHtml = '<div id="emp_placard" class="emp_placard yellowbg" '.$hideempplacard.'>';
     $empHtml .= '<div class="emp_label">'.$relRec['Label'].'</div>';
