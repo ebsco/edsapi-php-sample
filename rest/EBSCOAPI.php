@@ -230,8 +230,9 @@ class EBSCOAPI
             // if a sessionToken exists
             // AND the sessionTimeout value is greater than current time()
             // AND guest status has not change
-            // return the token that is part of the current SESSION
+            // return the token that is part of the current SESSION and write forward the sessionTimeoutValue
         
+            $_SESSION['sessionTimeoutValue'] = time()+($_SESSION['sessionTimeout']*0.9);
             $token = $_SESSION['sessionToken'];
         }
         else{
