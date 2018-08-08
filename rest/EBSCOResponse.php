@@ -182,7 +182,7 @@ class EBSCOResponse
         }
 
 		
-        if($this->response->SearchResult->RelatedContent){
+        if($this->response->SearchResult->RelatedContent->RelatedRecords){
 
 			$relatedRecsWithAction = $this->response->SearchResult->RelatedContent->RelatedRecords;
 			foreach($relatedRecsWithAction->RelatedRecord as $relRecs){

@@ -40,7 +40,6 @@
 		
 		$results = $_SESSION['results'];  
 		$queryStringUrl = $results['queryString'];
-		
 		$action = isset($_REQUEST['action'])?$_REQUEST['action']:'';
 		$actions = array();
 		if(!empty($action)){        

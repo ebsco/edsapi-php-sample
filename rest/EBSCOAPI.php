@@ -87,7 +87,7 @@ class EBSCOAPI
         try {
 
             $authenticationToken = $this->getAuthToken();
-            $sessionToken = $this ->getSessionToken($authenticationToken);
+            $sessionToken = $this ->getSessionToken($authenticationToken, 'n');
 
             
             if(empty($authenticationToken)){
@@ -115,7 +115,7 @@ class EBSCOAPI
                 switch ($code) {
                     case EBSCOConnector::EDS_AUTH_TOKEN_INVALID:
                         $authenticationToken = $this->getAuthToken();                
-                        $sessionToken = $this ->getSessionToken($authenticationToken);
+                        $sessionToken = $this ->getSessionToken($authenticationToken, 'n');
                         $headers = array(
                 'x-authenticationToken: ' . $authenticationToken,
                 'x-sessionToken: ' . $sessionToken
@@ -224,24 +224,42 @@ class EBSCOAPI
      */
     public function getSessionToken($authenToken, $guest='n'){
         $token = ''; 
-		$configFile="Config.xml";
-
-        // Check user's login status
-        if(isset($_SESSION['login']) or (validAuthIP($configFile)==true)){    
-		   if (($guest=='n') or (validAuthIP($configFile)==true)){
-			   $sessionToken = $this->apiSessionToken($authenToken, 'n');
-			   $_SESSION['sessionToken']=$sessionToken;
-		   }
-		   $token = $_SESSION['sessionToken'];
+        $configFile="Config.xml";
+        
+        if(isset($_SESSION['sessionToken']) && !empty($_SESSION['sessionToken']) && isset($_SESSION['sessionTimeoutValue']) && ((int)$_SESSION['sessionTimeoutValue']  > (int)time()) && isset($_SESSION['guest']) && ($guest == $_SESSION['guest'])){
+            // if a sessionToken exists
+            // AND the sessionTimeout value is greater than current time()
+            // AND guest status has not change
+            // return the token that is part of the current SESSION and write forward the sessionTimeoutValue
+        
+            $_SESSION['sessionTimeoutValue'] = time()+($_SESSION['sessionTimeout']*0.9);
+            $token = $_SESSION['sessionToken'];
         }
-        else 
-		{
-		   $sessionToken = $this->apiSessionToken($authenToken, 'y');   
-		   $_SESSION['sessionToken']=$sessionToken;
-   
-		   $token = $_SESSION['sessionToken'];   
-			// TODO: check IP validation
-		}
+        else{
+        // Check user's login status
+            if(isset($_SESSION['login']) or (validAuthIP($configFile)==true)){    
+                if (($guest=='n') or (validAuthIP($configFile)==true)){
+                    $sessionToken = $this->apiSessionToken($authenToken, 'n');
+                    
+                    //ensure your sessionToken, GuestStatus and SessionTimeoutValue is set
+                    $_SESSION['sessionToken']=$sessionToken;
+                    $_SESSION['guest'] = $guest;
+                    $_SESSION['sessionTimeoutValue'] = time()+($_SESSION['sessionTimeout']*0.9);
+                }
+                $token = $_SESSION['sessionToken'];
+            }
+            else{
+                $sessionToken = $this->apiSessionToken($authenToken, 'y');   
+                $_SESSION['sessionToken']=$sessionToken;
+                $token = $_SESSION['sessionToken'];   
+                //ensure your sessionToken, GuestStatus and SessionTimeoutValue is set
+                
+                $_SESSION['guest'] = $guest;
+                $_SESSION['sessionTimeoutValue'] = time()+($_SESSION['sessionTimeout']*0.9);
+                // TODO: check IP validation
+            }
+        }
+
         return $token;
     }
 
@@ -293,7 +311,6 @@ class EBSCOAPI
      * @access public
      */
     public function apiSearch($params) {
-        
         $results = $this->request('Search', $params);
         return $results;
     }
@@ -377,7 +394,6 @@ class EBSCOAPI
     public function apiInfo(){
         
         $response = $this->request('Info');
-	
         $Info = array(
             'Info' => $response,
             'timestamp'=>time()

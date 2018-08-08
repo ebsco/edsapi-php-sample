@@ -283,6 +283,7 @@ class EBSCOConnector
         $url = self::$end_point . '/Info';
 
         $response = $this->request($url, $params, $headers);
+        $_SESSION['sessionTimeout'] = (int)$response->ApplicationSettings->SessionTimeout;
         return $response;
     }
 
