@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Config>
-    <Version>EDS API-PHP Demo 1.6</Version>
+    <Version>EDS API-PHP Demo 1.7</Version>
     <EndPoints>
         <EndPoint>https://eds-api.ebscohost.com/edsapi/rest</EndPoint>
         <AuthenticationEndPoint>https://eds-api.ebscohost.com/Authservice/rest</AuthenticationEndPoint>                           
@@ -13,11 +13,11 @@
         </User>
     </ClientCredentials>
     <EDSCredentials>     
-		<ClientUser>xxxxxx</ClientUser>
-		<EDSUserID>xxxxxx</EDSUserID>
-		<EDSPassword>xxxxxx</EDSPassword>
-		<EDSProfile>xxxxxx</EDSProfile>
-        <IPAuth>y</IPAuth>        
+		<ClientUser></ClientUser>
+		<EDSUserID></EDSUserID>
+		<EDSPassword></EDSPassword>
+		<EDSProfile></EDSProfile>
+        <IPAuth>n</IPAuth>
     </EDSCredentials>
 	<ipaddresses>
 		<ip>127.0.0.1</ip>
