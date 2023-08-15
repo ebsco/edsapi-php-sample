@@ -214,7 +214,7 @@ jQuery.fn = jQuery.prototype = {
 	selector: "",
 
 	// The current version of jQuery being used
-	jquery: "1.7.2",
+	jquery: "3.5.0",
 
 	// The default length of a jQuery object is 0
 	length: 0,
