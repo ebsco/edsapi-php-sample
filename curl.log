@@ -1,20 +1,38 @@
-* About to connect() to eds-api.ebscohost.com port 80 (#0)
-*   Trying 140.234.252.186...
-* connected
-* Connected to eds-api.ebscohost.com (140.234.252.186) port 80 (#0)
-> GET /edsapi/rest/Retrieve?an=87690402&dbid=ers&highlightterms=stem%2Ccells HTTP/1.1
+*   Trying 100.64.1.30:443...
+* Connected to eds-api.ebscohost.com (100.64.1.30) port 443 (#0)
+* ALPN, offering h2
+* ALPN, offering http/1.1
+* successfully set certificate verify locations:
+*  CAfile: C:\xampp\apache\bin\curl-ca-bundle.crt
+*  CApath: none
+* SSL connection using TLSv1.2 / ECDHE-RSA-AES128-GCM-SHA256
+* ALPN, server accepted to use h2
+* Server certificate:
+*  subject: CN=*.ebscohost.com
+*  start date: Jul  3 00:00:00 2023 GMT
+*  expire date: Jul 31 23:59:59 2024 GMT
+*  subjectAltName: host "eds-api.ebscohost.com" matched cert's "*.ebscohost.com"
+*  issuer: C=US; O=Amazon; CN=Amazon RSA 2048 M02
+*  SSL certificate verify ok.
+* Using HTTP2, server supports multi-use
+* Connection state changed (HTTP/2 confirmed)
+* Copying HTTP/2 data in stream buffer to connection buffer after upgrade: len=0
+* Using Stream ID: 1 (easy handle 0x213e2fbeed0)
+> POST /Authservice/rest/ipauth HTTP/2
 Host: eds-api.ebscohost.com
-Accept: */*
-x-authenticationToken: 15b0423c-246f-4c38-9132-d38c4b0afe08
-x-sessionToken: 2bddf71e-d8bb-40e2-a54d-aafc34dd43fe.I0md9lJPvxgwQb29I3pgl7V+u0uAP9UY6stt+t04DfE=
+accept: */*
+content-type: application/xml
+content-length: 302
 
-< HTTP/1.1 200 OK
-< Cache-Control: private
-< Content-Length: 36005
-< Content-Type: application/xml; charset=utf-8
-< Server: Microsoft-IIS/7.5
-< X-AspNet-Version: 4.0.30319
-< X-Powered-By: ASP.NET
-< Date: Tue, 06 Jan 2015 20:08:57 GMT
+* Connection state changed (MAX_CONCURRENT_STREAMS == 128)!
+* We are completely uploaded and fine
+< HTTP/2 400 
+< date: Thu, 27 Jul 2023 11:52:29 GMT
+< content-type: application/xml; charset=utf-8
+< content-length: 265
+< cache-control: private
+< server: Microsoft-IIS/10.0
+< x-aspnet-version: 4.0.30319
+< x-powered-by: ASP.NET
 < 
 * Connection #0 to host eds-api.ebscohost.com left intact
