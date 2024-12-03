@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 /*!
- * jQuery JavaScript Library v3.7.0
+ * jQuery JavaScript Library v3.7.1
  * https://jquery.com/
  *
  * Copyright 2011, John Resig
@@ -214,7 +214,7 @@ jQuery.fn = jQuery.prototype = {
 	selector: "",
 
 	// The current version of jQuery being used
-	jquery: "3.7.0",
+	jquery: "3.7.1",
 
 	// The default length of a jQuery object is 0
 	length: 0,
